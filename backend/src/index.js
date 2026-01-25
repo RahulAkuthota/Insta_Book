@@ -1,7 +1,8 @@
 import dotenv from "dotenv"
 import { dbConnect } from "./db/index.js"
 import { app } from "./app.js"
-
+import { sendWelcomeMail } from "./utils/sendWelcomeMail.utils.js"
+ 
 dotenv.config({path:"./.env"})
 
 
