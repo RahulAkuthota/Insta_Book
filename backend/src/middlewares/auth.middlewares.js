@@ -7,7 +7,7 @@ const verifyJWT = asyncHandler(async (req, res , next) => {
   const authHeader = req.header("Authorization");
 
   const token =
-    req.cookies?.contentdockAccessToken ||
+    req.cookies?.instabookAccessToken ||
     (authHeader && authHeader.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : null);

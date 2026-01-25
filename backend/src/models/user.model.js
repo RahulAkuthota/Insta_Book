@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      select: false,
     },
 
     role: {
@@ -73,7 +72,7 @@ userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     { _id: this._id },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIR }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
   );
 };
 
