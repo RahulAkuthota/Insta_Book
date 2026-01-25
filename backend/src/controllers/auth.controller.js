@@ -25,55 +25,31 @@ const generateAccessAndRefreshTokens = async (userId) => {
 /* ================= REGISTER ================= */
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
-
-  if ([username, email, password].some(f => !f?.trim())) {
-    throw new ApiError(400, "All fields are required");
-  }
-
-  if (await User.findOne({ email })) {
-    throw new ApiError(409, "Email already exists");
-  }
-
-  if (await User.findOne({ username })) {
-    throw new ApiError(409, "Username already taken");
-  }
-
-  const user = await User.create({ username, email, password });
-
-  const safeUser = await User.findById(user._id)
-    .select("-password -refreshToken");
-
-  await sendWelcomeMail(email, username);
-
-  return res
-    .status(201)
-    .json(new ApiResponse(201, { user: safeUser }, "Successfully registered"));
+  
 });
 
 /* ================= LOGIN ================= */
 
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!email && !username) {
-    throw new ApiError(400, "Email or username required");
+  if (!email ) {
+    throw new ApiError(400, "Email is required");
   }
 
   if (!password) {
     throw new ApiError(400, "Password required");
   }
 
-  const query = email ? { email } : { username };
-  const user = await User.findOne(query);
+   const user = await User.findOne({email});
 
   if (!user) {
-    throw new ApiError(401, "Invalid credentials");
+    throw new ApiError(401, "User Not Found");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid credentials");
+    throw new ApiError(401, "Invalid Password");
   }
 
   const { accessToken, refreshToken } =
@@ -88,10 +64,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("contentdockAccessToken", accessToken, options)
-    .cookie("contentdockRefreshToken", refreshToken, options)
+    .cookie("instabookAccessToken", accessToken, options)
+    .cookie("instabookRefreshToken", refreshToken, options)
     .json(
-      new ApiResponse(200, {}, `${user.username} logged in successfully`)
+      new ApiResponse(200, {}, `${user.name} logged in successfully`)
     );
 });
 
