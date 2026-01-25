@@ -26,19 +26,18 @@ const requireOrganizer = asyncHandler(async (req, res, next) => {
 });
 
 
-const requireAdmin=asyncHandler( async(req , res , next)=>
-{
-    if(!req.user)
-    {
-        throw new ApiError(401 , "Login required")
-    }
-    if(req.user.role!=="ADMIN")
-    {
-        throw new ApiError(401 , "Admin access required")
-    }
 
-    next();
-})
+const requireAdmin = asyncHandler(async (req, res, next) => {
+  if (!req.user) {
+    throw new ApiError(401, "Login required");
+  }
+
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Admin access required");
+  }
+
+  next();
+});
 
 
 export { requireOrganizer , requireAdmin };
