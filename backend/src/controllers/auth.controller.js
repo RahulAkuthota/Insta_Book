@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
+import {sendWelcomeMail} from "../utils/sendWelcomeMail.utils.js"
 
 /* ================= TOKEN GENERATOR ================= */
 
@@ -22,28 +23,39 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 /* ================= REGISTER ================= */
-
 const registerUser = asyncHandler(async (req, res) => {
-  const { email, name, password} = req.body;
-  if(!email || !name || !password){
-    throw new ApiError(400,"All fields are required");
+  const { email, name, password } = req.body;
+
+  if (!email || !name || !password) {
+    throw new ApiError(400, "All fields are required");
   }
-  const existsUser = await User.findOne({email});
-  if(existsUser){
-    throw new ApiError(400,"User with this email already exists");
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new ApiError(409, "User with this email already exists");
   }
-   const user = await User.create({
+
+  const user = await User.create({
     email,
-    name,password
-   });
+    name,
+    password,
+  });
 
-   const createduser = await User.findById(user._id).select("-password -refreshToken");
+  const responseUser = {
+    _id: user._id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    createdAt: user.createdAt,
+  };
 
-   return res.status(200).json(
-    new ApiResponse(201,createduser,"User registered succesfully")
-   )
-  
+  sendWelcomeMail(email , name);
+
+  return res.status(201).json(
+    new ApiResponse(201, responseUser, "User registered successfully")
+  );
 });
+
 
 /* ================= LOGIN ================= */
 
