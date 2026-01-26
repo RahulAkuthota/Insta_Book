@@ -34,6 +34,12 @@ import organizerRouter from "./routes/organizer.routes.js"
 app.use("/api/v1/organizer" , organizerRouter);
 
 
+/*==================  ADMIN ROUTES  ==================*/
+
+import adminRouter from "./routes/admin.routes.js"
+
+app.use("/api/v1/admin",adminRouter)
+
 /* ================= ERROR HANDLER ================= */
 
 app.use(errorHandler);
