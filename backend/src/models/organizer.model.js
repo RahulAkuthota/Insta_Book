@@ -12,26 +12,19 @@ const organizerSchema = new mongoose.Schema(
     organizationName: {
       type: String,
       required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
     },
 
     organizerStatus: {
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED"],
       default: "PENDING",
-    },
-
-    phone: {
-      type: String,
-      required: true,
-    },
-
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-
-    payoutAccountId: {
-      type: String, // Razorpay account ID (future use)
     },
   },
   { timestamps: true }
