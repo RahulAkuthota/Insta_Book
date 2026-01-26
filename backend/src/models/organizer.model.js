@@ -14,6 +14,12 @@ const organizerSchema = new mongoose.Schema(
       required: true,
     },
 
+    organizerStatus: {
+      type: String,
+      enum: ["PENDING", "APPROVED", "REJECTED"],
+      default: "PENDING",
+    },
+
     phone: {
       type: String,
       required: true,

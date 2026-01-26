@@ -28,8 +28,10 @@ import { sendOrganizerApplicationMail } from "../utils/sendOrganizerApplicationM
     userId,
     organizationName,
     phone,
+    organizerStatus: "PENDING",
     isVerified: false,
   });
+
 
   // mail is async, non-blocking
   sendOrganizerApplicationMail(
