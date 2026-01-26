@@ -17,9 +17,9 @@ const requireOrganizer = asyncHandler(async (req, res, next) => {
     throw new ApiError(403, "Organizer profile not found");
   }
 
-  if (!organizer.isVerified) {
-    throw new ApiError(403, "Organizer approval pending");
-  }
+  if (organizer.organizerStatus !== "APPROVED") {
+  throw new ApiError(403, "Organizer not approved");
+  } 
 
   req.organizer = organizer;
   next();

@@ -19,6 +19,10 @@ import { sendOrganizerApplicationMail } from "../utils/sendOrganizerApplicationM
     throw new ApiError(404, "User not found");
   }
 
+  if (user.role === "ORGANIZER") {
+  throw new ApiError(400, "User is already an organizer");
+  }
+
   const existingOrganizer = await Organizer.findOne({ userId });
   if (existingOrganizer) {
     throw new ApiError(400, "Organizer application already exists");
@@ -28,8 +32,7 @@ import { sendOrganizerApplicationMail } from "../utils/sendOrganizerApplicationM
     userId,
     organizationName,
     phone,
-    organizerStatus: "PENDING",
-    isVerified: false,
+    organizerStatus: "PENDING"
   });
 
 
