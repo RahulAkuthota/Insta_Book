@@ -4,7 +4,7 @@ import cors from "cors";
 import path from "path";
 
 import { errorHandler } from "./middlewares/errorHandler.middlewares.js";
-import userRouter from "./routes/auth.routes.js";
+
 
 const app = express();
 
@@ -21,7 +21,17 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
 
+/* ================= USER ROUTES(AUTH ROUTES) ================= */
+import userRouter from "./routes/auth.routes.js";
+
 app.use("/api/v1/user", userRouter);
+
+
+/* ================= ORGANIZER ROUTES ================= */
+
+import organizerRouter from "./routes/organizer.routes.js"
+
+app.use("/api/v1/organizer" , organizerRouter);
 
 
 /* ================= ERROR HANDLER ================= */
