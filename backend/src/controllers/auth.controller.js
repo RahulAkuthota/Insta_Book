@@ -23,7 +23,27 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
 /* ================= REGISTER ================= */
 
-const registerUser = asyncHandler(async (req, res) => {});
+const registerUser = asyncHandler(async (req, res) => {
+  const { email, name, password} = req.body;
+  if(!email || !name || !password){
+    throw new ApiError(400,"All fields are required");
+  }
+  const existsUser = await User.findOne({email});
+  if(existsUser){
+    throw new ApiError(400,"User with this email already exists");
+  }
+   const user = await User.create({
+    email,
+    name,password
+   });
+
+   const createduser = await User.findById(user._id).select("-password -refreshToken");
+
+   return res.status(200).json(
+    new ApiResponse(201,createduser,"User registered succesfully")
+   )
+  
+});
 
 /* ================= LOGIN ================= */
 
