@@ -3,6 +3,10 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { User } from "../models/user.model.js";
+import { sendOrganizerRejectedMail } from "../utils/sendOrganizerRejectedMail.js";
+import { sendOrganizerApprovedMail } from "../utils/sendOrganizerApprovedMail.js";
+
+
 
 const getPendingOrganizers = asyncHandler(async (req, res) => {
   const organizers = await Organizer.find({
@@ -43,6 +47,14 @@ const approveOrganizer = asyncHandler(async (req, res) => {
   }
 
   organizer.organizerStatus = "APPROVED";
+  //send approved email
+  sendOrganizerApprovedMail(
+    user.email,
+    user.name,
+    organizer.organizationName
+  ).catch(console.error);
+  
+  
   user.role = "ORGANIZER";
   await user.save({ validateBeforeSave: false });
   await organizer.save();
@@ -69,7 +81,16 @@ const rejectOrganizer = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Organizer already approved");
   }
 
+  const user = await User.findById(organizer.userId)
+
   organizer.organizerStatus = "REJECTED";
+   //send reject mail
+   sendOrganizerRejectedMail(
+    user.email,
+    user.name,
+    organizer.organizationName,
+    "Incomplete verification documents"
+  ).catch(console.error);
   await organizer.save();
 
   return res
