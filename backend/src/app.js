@@ -43,6 +43,17 @@ import eventRouter from "./routes/event.routes.js"
 
 app.use("/api/v1/event",eventRouter)
 
+/*==================  Ticket ROUTES  ==================*/
+
+import ticketRouter from "./routes/ticket.routes.js"
+
+app.use("/api/v1/ticket",ticketRouter)
+
+
+
+
+
+
 /* ================= ERROR HANDLER ================= */
 
 app.use(errorHandler);
