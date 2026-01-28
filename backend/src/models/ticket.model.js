@@ -11,6 +11,7 @@ const ticketSchema = new mongoose.Schema(
     type: {
       type: String, // Regular / VIP / Free
       required: true,
+      enum:["GENERAL","PLATINUM","FREE"]
     },
 
     price: {
