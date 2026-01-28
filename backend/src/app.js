@@ -37,7 +37,7 @@ import adminRouter from "./routes/admin.routes.js"
 
 app.use("/api/v1/admin",adminRouter)
 
-/*==================  ADMIN ROUTES  ==================*/
+/*==================  EVENT ROUTES  ==================*/
 
 import eventRouter from "./routes/event.routes.js"
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEvent, deleteEvent, updateEvent } from "../controllers/event.controller.js";
+import { createEvent, deleteEvent, updateEvent, getEventById, listOrganizerEvents } from "../controllers/event.controller.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { requireOrganizer } from "../middlewares/role.middlewares.js";
 
@@ -11,11 +11,19 @@ router
 
 router
 .route("/update/:eventId")
-.post(verifyJWT, requireOrganizer, updateEvent);
+.patch(verifyJWT, requireOrganizer, updateEvent);
 
 router
 .route("/delete/:eventId")
-.post(verifyJWT, requireOrganizer, deleteEvent);
+.delete(verifyJWT, requireOrganizer, deleteEvent);
+
+router
+.route("/:eventId")
+.get(verifyJWT,requireOrganizer,getEventById);
+
+router
+.route("/organizer/events")
+.get(verifyJWT,requireOrganizer,listOrganizerEvents)
 
 
 export default router;
