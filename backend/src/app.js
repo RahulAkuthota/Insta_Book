@@ -1,10 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import path from "path";
-
 import { errorHandler } from "./middlewares/errorHandler.middlewares.js";
-
 
 const app = express();
 
@@ -39,6 +36,12 @@ app.use("/api/v1/organizer" , organizerRouter);
 import adminRouter from "./routes/admin.routes.js"
 
 app.use("/api/v1/admin",adminRouter)
+
+/*==================  ADMIN ROUTES  ==================*/
+
+import eventRouter from "./routes/event.routes.js"
+
+app.use("/api/v1/event",eventRouter)
 
 /* ================= ERROR HANDLER ================= */
 
