@@ -120,5 +120,42 @@ const deleteEvent= asyncHandler(async (req,res)=>{
     )
 })
 
+const getEventById = asyncHandler( async (req,res)=>{
 
-export { createEvent,updateEvent,deleteEvent};
+  const { eventId } = req.params
+
+  const event = await Event.findById(eventId)
+
+  if(!event){
+    throw new ApiError(404,"Event not Found")
+  }
+
+  if(req.organizer._id.toString()!==event.organizerId.toString()){
+    throw new ApiError(403,"Organizer access needed")
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200,event,"Event Fetched Succesfully")
+  )
+  
+})
+
+
+
+const listOrganizerEvents = asyncHandler( async (req,res)=>{
+  
+  const events = await Event.find({organizerId:req.organizer._id}).sort({ createdAt: -1 });
+
+  if(events.length===0){
+    return res.status(200).json(
+      new ApiResponse(200,[],"No Orgainzed Events"))
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200,events,"Organized Events fetched Succesfully ")
+  )
+
+})
+
+
+export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents};
