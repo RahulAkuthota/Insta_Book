@@ -2,6 +2,8 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Event } from "../models/event.model.js";
+import { Ticket } from "../models/ticket.model.js";
+import mongoose from "mongoose";
 
 const createEvent = asyncHandler(async (req, res) => {
   const { title, description, category, date, location, startTime } = req.body;
@@ -55,6 +57,10 @@ const updateEvent = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Event ID is required");
   }
 
+  if (!mongoose.Types.ObjectId.isValid(eventId)) {
+    throw new ApiError(400, "Invalid Event ID format");
+  }
+
   const event = await Event.findById(eventId);
   if (!event) {
     throw new ApiError(404, "Event not found");
@@ -102,6 +108,9 @@ const updateEvent = asyncHandler(async (req, res) => {
 
 const deleteEvent= asyncHandler(async (req,res)=>{
     const {eventId} = req.params
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      throw new ApiError(400, "Invalid Event ID format");
+    }
 
     const event = await Event.findById(eventId)
 
@@ -123,6 +132,10 @@ const deleteEvent= asyncHandler(async (req,res)=>{
 const getEventById = asyncHandler( async (req,res)=>{
 
   const { eventId } = req.params
+
+  if (!mongoose.Types.ObjectId.isValid(eventId)) {
+    throw new ApiError(400, "Invalid Event ID format");
+  }
 
   const event = await Event.findById(eventId)
 
@@ -158,4 +171,41 @@ const listOrganizerEvents = asyncHandler( async (req,res)=>{
 })
 
 
-export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents};
+// Fetch all tickets related to a event
+const getTickets = asyncHandler(async (req,res)=>{
+
+  const {eventId}=req.params;
+
+  if(!eventId){
+    throw new ApiError(400,"No EventId Exist")
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(eventId)) {
+    throw new ApiError(400, "Invalid Event ID format");
+  }
+
+  const event = await Event.findById(eventId)
+
+
+  if(!event){
+    throw new ApiError(404,"Event not Found")
+  }
+
+  if(req.organizer._id.toString()!==event.organizerId.toString()){
+    throw new ApiError(403,"Organizer access needed")
+  }
+
+  const allTickets = await Ticket.find({eventId})
+
+  if (allTickets.length === 0)
+  {
+    throw new ApiError(404,"No Tickets are created for this event")
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200,allTickets," Tickets Fetched Successfully ")
+  )
+})
+
+
+export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents,getTickets};
