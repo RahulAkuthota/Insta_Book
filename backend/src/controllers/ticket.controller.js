@@ -39,8 +39,12 @@ const createTicket = asyncHandler(async (req, res) => {
   const ticketType = type.toUpperCase();
   const isFree = ticketType === "FREE";
 
-  if (!isFree && (price === undefined || price < 0)) {
-    throw new ApiError(400, "Valid price is required for paid tickets");
+  if (isFree && price > 0) {
+    throw new ApiError(400, "Free tickets cannot have price");
+  }
+
+  if (!isFree && price <= 0) {
+    throw new ApiError(400, "Paid tickets must have price greater than zero");
   }
 
   //  Prevent duplicate ticket types
@@ -52,7 +56,7 @@ const createTicket = asyncHandler(async (req, res) => {
   if (existingTicket) {
     throw new ApiError(
       400,
-      "Ticket of this type already exists for this event"
+      "Ticket of this type already exists for this event",
     );
   }
 
@@ -66,9 +70,9 @@ const createTicket = asyncHandler(async (req, res) => {
     availableSeats: totalSeats,
   });
 
-  return res.status(201).json(
-    new ApiResponse(201, ticket, "Ticket created successfully")
-  );
+  return res
+    .status(201)
+    .json(new ApiResponse(201, ticket, "Ticket created successfully"));
 });
 
 /* ================= DELETE TICKET ================= */
@@ -92,7 +96,7 @@ const deleteTicket = asyncHandler(async (req, res) => {
   if (event.organizerId.toString() !== req.organizer._id.toString()) {
     throw new ApiError(
       403,
-      "Unauthorized request. You don't have permission to delete this ticket"
+      "Unauthorized request. You don't have permission to delete this ticket",
     );
   }
 
@@ -104,9 +108,9 @@ const deleteTicket = asyncHandler(async (req, res) => {
   //  Delete ticket
   await ticket.deleteOne();
 
-  return res.status(200).json(
-    new ApiResponse(200, null, "Ticket deleted successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Ticket deleted successfully"));
 });
 
 export { createTicket, deleteTicket };

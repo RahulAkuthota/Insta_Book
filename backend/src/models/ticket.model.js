@@ -38,4 +38,8 @@ const ticketSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+ticketSchema.index({ eventId: 1, type: 1 }, { unique: true });
+
+
 export const Ticket = mongoose.model("Ticket", ticketSchema);
