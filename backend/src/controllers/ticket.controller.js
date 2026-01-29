@@ -2,8 +2,9 @@ import { Event } from "../models/event.model.js";
 import { Ticket } from "../models/ticket.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
-const createTickets = asyncHandler(async (req, res) => {
+const createTicket = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
 
   const event = await Event.findById(eventId);
@@ -20,15 +21,15 @@ const createTickets = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Cannot create tickets as event already published");
   }
 
-  const { type, price,  totalSeats, availableSeats } = req.body;
+  const { type, price,  totalSeats } = req.body;
 
   if (
-    [type, price, totalSeats, availableSeats].some((field) => !field)
+    [type, price, totalSeats ].some((field) => !field)
   ) {
     throw new ApiError(404, "All fields are required");
   }
 
-  const isTypeFound = Ticket.findOne({ eventId: event._id, type });
+  const isTypeFound = await Ticket.findOne({ eventId: event._id, type });
 
   if (isTypeFound) {
     throw new ApiError(
@@ -45,10 +46,11 @@ const createTickets = asyncHandler(async (req, res) => {
 
   const createdTickets = await Ticket.create({
     eventId: event._id,
+    type,
     price,
     isFree,
     totalSeats,
-    availableSeats,
+    availableSeats : totalSeats
   });
 
   return res
@@ -58,4 +60,30 @@ const createTickets = asyncHandler(async (req, res) => {
 
 
 
-export {createTickets}
+const deleteTicket=asyncHandler(async(req , res)=>
+{
+   const { ticketId } = req.params
+
+   const ticket=await Ticket.findById(ticketId)
+
+   if(!ticket)
+   {
+    new ApiError(400 , "Inavlid Ticket")
+   }
+
+   const event=await Event.findById(ticket.eventId)
+
+   if(event.organizerId.toString() !== req.organizer._id.toString())
+   {
+    throw new ApiError(403,"Unauthorized Request, You dont have permission to delete this Ticket")
+   }
+
+   await ticket.deleteOne()
+
+   return res.status(200)
+   .json(new ApiResponse(200,null , "Ticket deleted successfully"))
+})
+
+
+
+export {createTicket , deleteTicket}
