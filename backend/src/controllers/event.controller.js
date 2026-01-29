@@ -158,4 +158,68 @@ const listOrganizerEvents = asyncHandler( async (req,res)=>{
 })
 
 
-export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents};
+const publishEvent = asyncHandler( async (req,res) =>{
+  const {eventId} = req.params
+
+  if (!mongoose.Types.ObjectId.isValid(eventId)) {
+  throw new ApiError(400, "Invalid Event ID");
+  }
+
+  const event = await Event.findById(eventId)
+
+  if(!event){
+    throw new ApiError(404,"Event not found")
+  }
+
+  if(req.organizer._id.toString()!==event.organizerId.toString()){
+    throw new ApiError(403,"Unauthorized Access")
+  }
+
+  if(event.isPublished){
+    throw new ApiError(404,"Event already published")
+  }
+
+  event.isPublished=true
+
+  await event.save()
+
+  return res.status(200)
+  .json(
+    new ApiResponse(200,event,"Event Published Succesfully")
+  )
+
+})
+
+const unPublishEvent = asyncHandler( async (req,res) =>{
+  const {eventId} = req.params
+
+  if (!mongoose.Types.ObjectId.isValid(eventId)) {
+  throw new ApiError(400, "Invalid Event ID");
+  }
+
+  const event = await Event.findById(eventId)
+
+  if(!event){
+    throw new ApiError(404,"Event not found")
+  }
+
+  if(req.organizer._id.toString()!== event.organizerId.toString()){
+    throw new ApiError(403,"Unauthorized Access")
+  }
+
+  if(!event.isPublished){
+    throw new ApiError(404,"Event not published yet")
+  }
+
+  event.isPublished=false
+
+  await event.save()
+
+  return res.status(200)
+  .json(
+    new ApiResponse(200,event,"Event unpublished Succesfully")
+  )
+
+})
+
+export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents,publishEvent,unPublishEvent};
