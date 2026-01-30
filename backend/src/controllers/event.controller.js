@@ -281,4 +281,31 @@ const getPublishedEvents = asyncHandler(async (req, res) => {
 });
 
 
-export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents,getTickets,getPublishedEvents};
+const getPublishedEventTickets = asyncHandler(async (req, res) => {
+  const { eventId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(eventId)) {
+    throw new ApiError(400, "Invalid Event ID format");
+  }
+
+  const event = await Event.findOne({
+    _id: eventId,
+    isPublished: true,
+  });
+
+  if (!event) {
+    throw new ApiError(404, "Event not found or not published");
+  }
+
+  const tickets = await Ticket.find({
+    eventId,
+    availableSeats: { $gt: 0 },
+  });
+
+  return res.status(200).json(
+    new ApiResponse(200, tickets, "Tickets fetched successfully")
+  );
+});
+
+
+export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents,getTickets,getPublishedEvents,getPublishedEventTickets,publishEvent,unPublishEvent};
