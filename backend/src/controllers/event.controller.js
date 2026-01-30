@@ -208,4 +208,18 @@ const getTickets = asyncHandler(async (req,res)=>{
 })
 
 
-export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents,getTickets};
+const getPublishedEvents = asyncHandler(async (req, res) => {
+  const publishedEvents = await Event.find({ isPublished: true });
+
+  return res.status(200).json(
+    new ApiResponse(200, publishedEvents, "Active events fetched successfully")
+  );
+});
+
+
+
+
+
+
+
+export { createEvent,updateEvent,deleteEvent,getEventById,listOrganizerEvents,getTickets,getPublishedEvents};
