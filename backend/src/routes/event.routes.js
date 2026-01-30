@@ -1,49 +1,67 @@
 import { Router } from "express";
-import { createEvent, deleteEvent, updateEvent, getEventById, listOrganizerEvents, getTickets, publishEvent ,unPublishEvent , getPublishedEvents , getPublishedEventTickets } from "../controllers/event.controller.js";
+import {
+  createEvent,
+  deleteEvent,
+  updateEvent,
+  getEventById,
+  listOrganizerEvents,
+  getTickets,
+  publishEvent,
+  unPublishEvent,
+  getPublishedEvents,
+  getPublishedEventTickets,
+} from "../controllers/event.controller.js";
+
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { requireOrganizer } from "../middlewares/role.middlewares.js";
 
 const router = Router();
 
-router
-.route("/publishedevents")
-.get(getPublishedEvents)
+/* ================= PUBLIC ROUTES ================= */
 
+// all published events
 router
-.route("/public/:eventId")
-.get(getPublishedEventTickets)
+  .route("/")
+  .get(getPublishedEvents);
 
-
+// published event tickets
 router
-.route("/create")
-.post(verifyJWT, requireOrganizer, createEvent);
+  .route("/:eventId/tickets")
+  .get(getPublishedEventTickets);
 
+// single published event
 router
-.route("/update/:eventId")
-.patch(verifyJWT, requireOrganizer, updateEvent);
+  .route("/:eventId")
+  .get(getEventById);
 
-router
-.route("/delete/:eventId")
-.delete(verifyJWT, requireOrganizer, deleteEvent);
+/* ================= ORGANIZER ROUTES ================= */
 
 router
-.route("/:eventId")
-.get(verifyJWT,requireOrganizer,getEventById);
+  .route("/create")
+  .post(verifyJWT, requireOrganizer, createEvent);
 
 router
-.route("/organizer/events")
-.get(verifyJWT,requireOrganizer,listOrganizerEvents)
+  .route("/update/:eventId")
+  .patch(verifyJWT, requireOrganizer, updateEvent);
 
 router
-.route("/tickets/:eventId")
-.get(verifyJWT,requireOrganizer,getTickets)
+  .route("/delete/:eventId")
+  .delete(verifyJWT, requireOrganizer, deleteEvent);
 
+router
+  .route("/organizer/events")
+  .get(verifyJWT, requireOrganizer, listOrganizerEvents);
 
-router.route("/publishevent/:eventId")
-.patch(verifyJWT,requireOrganizer,publishEvent)
+router
+  .route("/organizer/events/:eventId/tickets")
+  .get(verifyJWT, requireOrganizer, getTickets);
 
-router.route("/unpublishevent/:eventId")
-.patch(verifyJWT,requireOrganizer,unPublishEvent)
+router
+  .route("/publishevent/:eventId")
+  .patch(verifyJWT, requireOrganizer, publishEvent);
 
+router
+  .route("/unpublishevent/:eventId")
+  .patch(verifyJWT, requireOrganizer, unPublishEvent);
 
 export default router;

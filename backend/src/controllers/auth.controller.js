@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import {sendWelcomeMail} from "../utils/sendWelcomeMail.utils.js"
+import { sendWelcomeMail } from "../utils/sendWelcomeMail.utils.js";
 
 /* ================= TOKEN GENERATOR ================= */
 
@@ -23,12 +23,15 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 /* ================= REGISTER ================= */
+
 const registerUser = asyncHandler(async (req, res) => {
-  const { email, name, password } = req.body;
+  let { email, name, password } = req.body;
 
   if (!email || !name || !password) {
     throw new ApiError(400, "All fields are required");
   }
+
+  email = email.toLowerCase().trim();
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -37,7 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     email,
-    name,
+    name: name.trim(),
     password,
   });
 
@@ -49,75 +52,80 @@ const registerUser = asyncHandler(async (req, res) => {
     createdAt: user.createdAt,
   };
 
-  sendWelcomeMail(email , name);
+  // 📧 fire-and-forget
+  sendWelcomeMail(user.email, user.name).catch(console.error);
 
   return res.status(201).json(
     new ApiResponse(201, responseUser, "User registered successfully")
   );
 });
 
-
 /* ================= LOGIN ================= */
 
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  let { email, password } = req.body;
 
   if (!email || !password) {
     throw new ApiError(400, "Email and password are required");
   }
 
+  email = email.toLowerCase().trim();
+
   const user = await User.findOne({ email });
 
-  if (!user) {
-    throw new ApiError(401, "User Not Found");
-  }
-
-  const isPasswordValid = await user.isPasswordCorrect(password);
-  if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid Password");
+  // 🔒 Do not leak which part failed
+  if (!user || !(await user.isPasswordCorrect(password))) {
+    throw new ApiError(401, "Invalid email or password");
   }
 
   if (!user.isActive) {
     throw new ApiError(403, "Account disabled");
   }
 
-  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-    user._id,
-  );
+  const { accessToken, refreshToken } =
+    await generateAccessAndRefreshTokens(user._id);
 
-  const options = {
+  const cookieOptions = {
     httpOnly: true,
     secure: true,
+    sameSite: "strict",
   };
 
   return res
     .status(200)
-    .cookie("instabookAccessToken", accessToken, options)
-    .cookie("instabookRefreshToken", refreshToken, options)
-    .json(new ApiResponse(200, {}, `${user.name} logged in successfully`));
+    .cookie("instabookAccessToken", accessToken, cookieOptions)
+    .cookie("instabookRefreshToken", refreshToken, cookieOptions)
+    .json(
+      new ApiResponse(200, {}, `${user.name} logged in successfully`)
+    );
 });
 
 /* ================= LOGOUT ================= */
 
 const logoutUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  const userId = req.user?._id;
 
-  if (!user) {
+  if (!userId) {
     throw new ApiError(401, "Unauthorized");
   }
 
-  user.refreshToken = undefined;
-  await user.save({ validateBeforeSave: false });
+  // 🔒 Atomic token invalidation
+  await User.findByIdAndUpdate(
+    userId,
+    { $unset: { refreshToken: 1 } },
+    { validateBeforeSave: false }
+  );
 
-  const options = {
+  const cookieOptions = {
     httpOnly: true,
     secure: true,
+    sameSite: "strict",
   };
 
   return res
     .status(200)
-    .clearCookie("instabookAccessToken", options)
-    .clearCookie("instabookRefreshToken", options)
+    .clearCookie("instabookAccessToken", cookieOptions)
+    .clearCookie("instabookRefreshToken", cookieOptions)
     .json(new ApiResponse(200, {}, "Logged out successfully"));
 });
 

@@ -5,67 +5,48 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 /* ================= CREATE TICKET ================= */
-
 const createTicket = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
   const { type, price, totalSeats } = req.body;
 
-  //  Validate event
   const event = await Event.findById(eventId);
-  if (!event) {
-    throw new ApiError(404, "Event not found");
-  }
+  if (!event) throw new ApiError(404, "Event not found");
 
-  //  Organizer ownership check
   if (event.organizerId.toString() !== req.organizer._id.toString()) {
-    throw new ApiError(403, "Organizer has no access to create tickets");
+    throw new ApiError(403, "Organizer has no access");
   }
 
-  //  Published event check
   if (event.isPublished) {
-    throw new ApiError(400, "Cannot create tickets after event is published");
+    throw new ApiError(400, "Cannot create tickets after publish");
   }
 
-  // Input validation
-  if (!type || !totalSeats) {
-    throw new ApiError(400, "Ticket type and total seats are required");
+  if (!type || price == null || totalSeats == null) {
+    throw new ApiError(400, "Type, price and totalSeats are required");
   }
 
   if (totalSeats <= 0) {
     throw new ApiError(400, "Total seats must be greater than zero");
   }
 
-  //  Normalize ticket type
+  if (price < 0) {
+    throw new ApiError(400, "Price cannot be negative");
+  }
+
   const ticketType = type.toUpperCase();
-  const isFree = ticketType === "FREE";
 
-  if (isFree && price > 0) {
-    throw new ApiError(400, "Free tickets cannot have price");
-  }
-
-  if (!isFree && price <= 0) {
-    throw new ApiError(400, "Paid tickets must have price greater than zero");
-  }
-
-  //  Prevent duplicate ticket types
   const existingTicket = await Ticket.findOne({
-    eventId: event._id,
+    eventId,
     type: ticketType,
   });
 
   if (existingTicket) {
-    throw new ApiError(
-      400,
-      "Ticket of this type already exists for this event",
-    );
+    throw new ApiError(400, "Ticket type already exists for this event");
   }
 
-  //  Create ticket
   const ticket = await Ticket.create({
-    eventId: event._id,
+    eventId,
     type: ticketType,
-    price: isFree ? 0 : price,
-    isFree,
+    price, // 0 = free, >0 = paid
     totalSeats,
     availableSeats: totalSeats,
   });
@@ -75,42 +56,37 @@ const createTicket = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, ticket, "Ticket created successfully"));
 });
 
+
 /* ================= DELETE TICKET ================= */
 
 const deleteTicket = asyncHandler(async (req, res) => {
   const { ticketId } = req.params;
 
-  //  Validate ticket
   const ticket = await Ticket.findById(ticketId);
-  if (!ticket) {
-    throw new ApiError(404, "Invalid ticket");
-  }
+  if (!ticket) throw new ApiError(404, "Ticket not found");
 
-  //  Validate event
   const event = await Event.findById(ticket.eventId);
-  if (!event) {
-    throw new ApiError(404, "Event not found");
-  }
+  if (!event) throw new ApiError(404, "Event not found");
 
-  // Organizer ownership check
   if (event.organizerId.toString() !== req.organizer._id.toString()) {
-    throw new ApiError(
-      403,
-      "Unauthorized request. You don't have permission to delete this ticket",
-    );
+    throw new ApiError(403, "Unauthorized");
   }
 
-  //  Prevent deletion after publish
   if (event.isPublished) {
-    throw new ApiError(400, "Cannot delete tickets after event is published");
+    throw new ApiError(400, "Cannot delete tickets after publish");
   }
 
-  //  Delete ticket
+  const bookingExists = await Booking.exists({ ticketId });
+  if (bookingExists) {
+    throw new ApiError(400, "Cannot delete ticket with bookings");
+  }
+
   await ticket.deleteOne();
 
   return res
     .status(200)
     .json(new ApiResponse(200, null, "Ticket deleted successfully"));
 });
+
 
 export { createTicket, deleteTicket };
