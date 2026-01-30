@@ -28,22 +28,34 @@ const bookingSchema = new mongoose.Schema(
 
     amount: {
       type: Number,
-      required: true,
+      min: 0,
+      required: true, // 👈 always present (0 for free)
     },
 
     paymentRequired: {
       type: Boolean,
-      default: true,
+      required: true,
     },
 
     bookingStatus: {
       type: String,
-      enum: ["PENDING", "CONFIRMED", "CANCELLED"],
+      enum: ["PENDING", "CONFIRMED", "FAILED", "CANCELLED", "EXPIRED"],
       default: "PENDING",
+    },
+
+    paymentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payment",
+      required: function () {
+        return this.paymentRequired;
+      },
     },
 
     qrCodeUrl: {
       type: String,
+      required: function () {
+        return this.bookingStatus === "CONFIRMED";
+      },
     },
   },
   { timestamps: true }
