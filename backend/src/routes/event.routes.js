@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEvent, deleteEvent, updateEvent, getEventById, listOrganizerEvents, getTickets, publishEvent ,unPublishEvent , getPublishedEvents} from "../controllers/event.controller.js";
+import { createEvent, deleteEvent, updateEvent, getEventById, listOrganizerEvents, getTickets, publishEvent ,unPublishEvent , getPublishedEvents , getPublishedEventTickets } from "../controllers/event.controller.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { requireOrganizer } from "../middlewares/role.middlewares.js";
 
@@ -8,6 +8,11 @@ const router = Router();
 router
 .route("/publishedevents")
 .get(getPublishedEvents)
+
+router
+.route("/public/:eventId")
+.get(getPublishedEventTickets)
+
 
 router
 .route("/create")
