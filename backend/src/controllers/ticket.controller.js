@@ -3,6 +3,7 @@ import { Ticket } from "../models/ticket.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import {Booking} from "../models/booking.model.js";
 
 /* ================= CREATE TICKET ================= */
 const createTicket = asyncHandler(async (req, res) => {
@@ -20,19 +21,27 @@ const createTicket = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Cannot create tickets after publish");
   }
 
-  if (!type || price == null || totalSeats == null) {
-    throw new ApiError(400, "Type, price and totalSeats are required");
+  if (!type || totalSeats == null) {
+    throw new ApiError(400, "Type and totalSeats are required");
   }
 
   if (totalSeats <= 0) {
     throw new ApiError(400, "Total seats must be greater than zero");
   }
 
-  if (price < 0) {
-    throw new ApiError(400, "Price cannot be negative");
-  }
-
   const ticketType = type.toUpperCase();
+
+  // 🔒 FREE vs PAID validation
+  let finalPrice;
+
+  if (ticketType === "FREE") {
+    finalPrice = 0;
+  } else {
+    if (price == null || price <= 0) {
+      throw new ApiError(400, "Paid tickets must have price greater than zero");
+    }
+    finalPrice = price;
+  }
 
   const existingTicket = await Ticket.findOne({
     eventId,
@@ -46,7 +55,7 @@ const createTicket = asyncHandler(async (req, res) => {
   const ticket = await Ticket.create({
     eventId,
     type: ticketType,
-    price, // 0 = free, >0 = paid
+    price: finalPrice,
     totalSeats,
     availableSeats: totalSeats,
   });
@@ -55,6 +64,7 @@ const createTicket = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(201, ticket, "Ticket created successfully"));
 });
+
 
 
 /* ================= DELETE TICKET ================= */
