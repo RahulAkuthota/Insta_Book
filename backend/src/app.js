@@ -2,7 +2,6 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler.middlewares.js";
-
 import userRouter from "./routes/auth.routes.js";
 import organizerRouter from "./routes/organizer.routes.js";
 import adminRouter from "./routes/admin.routes.js";
@@ -15,7 +14,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(","),
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 );

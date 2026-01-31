@@ -10,14 +10,14 @@ const ticketSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["GENERAL", "PLATINUM"],
+      enum: ["FREE", "GENERAL", "PLATINUM"],
       required: true,
     },
 
     price: {
       type: Number,
       required: true,
-      min: 0, // 0 = free ticket
+      min: 0, // FREE → 0
     },
 
     totalSeats: {
@@ -33,7 +33,7 @@ const ticketSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// One ticket type per event
+// Only one ticket type per event
 ticketSchema.index({ eventId: 1, type: 1 }, { unique: true });
 
 export const Ticket = mongoose.model("Ticket", ticketSchema);
