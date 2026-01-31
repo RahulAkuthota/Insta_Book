@@ -53,12 +53,12 @@ const bookingSchema = new mongoose.Schema(
 
     qrCodeUrl: {
       type: String,
-      required: function () {
-        return this.bookingStatus === "CONFIRMED";
-      },
+      // // required: function () {
+      // //   return this.bookingStatus === "CONFIRMED";
+      // },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Booking = mongoose.model("Booking", bookingSchema);

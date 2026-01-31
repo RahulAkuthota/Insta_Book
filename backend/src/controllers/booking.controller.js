@@ -5,8 +5,10 @@ import { Booking } from "../models/booking.model.js";
 import { Ticket } from "../models/ticket.model.js";
 import { Event } from "../models/event.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { generateQRCode } from "../utils/generateQRCode.utils.js"
+import { sendTicketEmail} from "../utils/sendTicketMail.utils.js"
 
-const freeBooking = asyncHandler(async (req, res) => {
+const createFreeBooking = asyncHandler(async (req, res) => {
   const { ticketId, eventId } = req.params;
   const { quantity } = req.body;
   const userId = req.user._id;
@@ -66,9 +68,19 @@ const freeBooking = asyncHandler(async (req, res) => {
     bookingStatus: "CONFIRMED",
   });
 
+  const qrUrl = await generateQRCode(booking._id.toString())
+
+  booking.qrCodeUrl=qrUrl;
+  await booking.save();
+
+  await sendTicketEmail(booking._id.toString())
+  .then(data=>console.log("✅ Email sent"))
+  .catch(error=>console.error("❌ Error sending email:", error))
+  
+
   return res.status(201).json(
     new ApiResponse(201, booking, "Booking Successful")
   );
 });
 
-export { freeBooking };
+export { createFreeBooking };
