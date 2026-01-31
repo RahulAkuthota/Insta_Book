@@ -7,6 +7,7 @@ import organizerRouter from "./routes/organizer.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import eventRouter from "./routes/event.routes.js";
 import ticketRouter from "./routes/ticket.routes.js";
+import bookingRouter from "./routes/booking.routes.js"
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/v1/organizer", organizerRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/event", eventRouter);
 app.use("/api/v1/ticket", ticketRouter);
+app.use("/api/v1/booking" , bookingRouter)
 
 /* ================= 404 HANDLER ================= */
 
