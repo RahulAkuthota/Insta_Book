@@ -1,6 +1,10 @@
+import cron from "node-cron";
 import dotenv from "dotenv"
 import { dbConnect } from "./db/index.js"
 import { app } from "./app.js"
+import { startBookingExpiryCron } from "./cron/bookingExpiry.cron.js";
+
+
  
 dotenv.config({path:"./.env"})
 
@@ -18,6 +22,7 @@ dbConnect()
     console.log("error occured while connecting to database!!!  ",error)
 })
 
+startBookingExpiryCron()
 
 
 
