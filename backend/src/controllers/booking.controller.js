@@ -8,6 +8,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateQRCode } from "../utils/generateQRCode.utils.js"
 import { sendTicketEmail} from "../utils/sendTicketMail.utils.js"
 import Razorpay from "razorpay"
+import { Payment } from "../models/payment.model.js"
 
 const createFreeBooking = asyncHandler(async (req, res) => {
   const { ticketId, eventId } = req.params;

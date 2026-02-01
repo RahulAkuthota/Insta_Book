@@ -1,36 +1,42 @@
-// src/cron/bookingExpiry.cron.js
 import cron from "node-cron";
 import { Booking } from "../models/booking.model.js";
 import { Ticket } from "../models/ticket.model.js";
 
+/**
+ * Expires unpaid bookings and releases seats
+ * Runs every 1 minute
+ */
 const startBookingExpiryCron = () => {
-  // Runs every minute
   cron.schedule("* * * * *", async () => {
     try {
       const now = new Date();
 
+      // Find expired pending bookings
       const expiredBookings = await Booking.find({
         bookingStatus: "PENDING",
         expiresAt: { $lte: now },
       });
 
       for (const booking of expiredBookings) {
-        // Release seats
+        // 1️⃣ Release seats
         await Ticket.findByIdAndUpdate(booking.ticketId, {
           $inc: { availableSeats: booking.quantity },
         });
 
-        booking.bookingStatus = "EXPIRED";
-        await booking.save();
+        // 2️⃣ Mark booking as EXPIRED (safe update)
+        await Booking.updateOne(
+          { _id: booking._id, bookingStatus: "PENDING" },
+          { $set: { bookingStatus: "EXPIRED" } },
+        );
       }
 
       if (expiredBookings.length > 0) {
         console.log(
-          `⏱️ Expired ${expiredBookings.length} bookings`
+          `⏱️ Booking Expiry Cron: expired ${expiredBookings.length} bookings`,
         );
       }
-    } catch (err) {
-      console.error("❌ Booking expiry cron failed:", err);
+    } catch (error) {
+      console.error("❌ Booking Expiry Cron failed:", error);
     }
   });
 };

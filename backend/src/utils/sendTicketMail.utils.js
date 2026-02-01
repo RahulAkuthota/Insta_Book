@@ -72,6 +72,10 @@ Booking ID: <strong>${booking._id}</strong>
 <td>${new Date(booking.eventId.date).toDateString()}</td>
 </tr>
 <tr>
+<td style="color:#888;">Event Start Time</td>
+<td>${booking.eventId.startTime}</td>
+</tr>
+<tr>
 <td style="color:#888;">Venue</td>
 <td>${booking.eventId.location}</td>
 </tr>
