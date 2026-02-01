@@ -83,4 +83,26 @@ const createFreeBooking = asyncHandler(async (req, res) => {
   );
 });
 
-export { createFreeBooking };
+ 
+
+const myBookings = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  const bookings = await Booking.find({ userId })
+    .populate("eventId")
+    .populate("ticketId")
+    .sort({ createdAt: -1 });
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(200).json(
+      new ApiResponse(200, [], "No bookings found")
+    );
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, bookings, "My bookings fetched successfully")
+  );
+});
+
+
+export { createFreeBooking,myBookings };
