@@ -116,6 +116,11 @@ const createPaidBooking = asyncHandler(async (req, res) => {
   const { quantity } = req.body;
   const userId = req.user._id;
 
+  if (!mongoose.Types.ObjectId.isValid(ticketId) ||
+      !mongoose.Types.ObjectId.isValid(eventId)) {
+    throw new ApiError(400, "Invalid ID format");
+  }
+
   if (!quantity || quantity <= 0) {
     throw new ApiError(400, "Invalid quantity");
   }
