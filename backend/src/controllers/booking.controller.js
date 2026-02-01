@@ -7,6 +7,7 @@ import { Event } from "../models/event.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateQRCode } from "../utils/generateQRCode.utils.js"
 import { sendTicketEmail} from "../utils/sendTicketMail.utils.js"
+import Razorpay from "razorpay"
 
 const createFreeBooking = asyncHandler(async (req, res) => {
   const { ticketId, eventId } = req.params;
@@ -104,5 +105,76 @@ const myBookings = asyncHandler(async (req, res) => {
   );
 });
 
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-export { createFreeBooking,myBookings };
+const createPaidBooking = asyncHandler(async (req, res) => {
+  const { eventId, ticketId } = req.params;
+  const { quantity } = req.body;
+  const userId = req.user._id;
+
+  if (!quantity || quantity <= 0) {
+    throw new ApiError(400, "Invalid quantity");
+  }
+
+  const event = await Event.findById(eventId);
+  if (!event || !event.isPublished) {
+    throw new ApiError(400, "Event not available");
+  }
+
+  const ticket = await Ticket.findById(ticketId);
+  if (!ticket || ticket.price <= 0) {
+    throw new ApiError(400, "Paid ticket required");
+  }
+
+  // 🔒 Atomic seat lock
+  const updatedTicket = await Ticket.findOneAndUpdate(
+    { _id: ticketId, availableSeats: { $gte: quantity } },
+    { $inc: { availableSeats: -quantity } },
+    { new: true }
+  );
+
+  if (!updatedTicket) {
+    throw new ApiError(400, "Not enough seats available");
+  }
+
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+  const booking = await Booking.create({
+    userId,
+    eventId,
+    ticketId,
+    quantity,
+    amount: ticket.price * quantity,
+    paymentRequired: true,
+    bookingStatus: "PENDING",
+    expiresAt,
+  });
+
+  const order = await razorpay.orders.create({
+    amount: booking.amount * 100,
+    currency: "INR",
+    receipt: booking._id.toString(),
+  });
+
+  await Payment.create({
+    bookingId: booking._id,
+    orderId: order.id,
+    status: "CREATED",
+  });
+
+  return res.status(201).json(
+    new ApiResponse(201, {
+      bookingId: booking._id,
+      orderId: order.id,
+      amount: booking.amount,
+      razorpayKey: process.env.RAZORPAY_KEY_ID,
+    })
+  );
+});
+
+
+
+export { createFreeBooking,myBookings,createPaidBooking };
