@@ -4,7 +4,7 @@ import { Booking } from "../models/booking.model.js";
 import { Payment } from "../models/payment.model.js";
 import { Ticket } from "../models/ticket.model.js";
 import { generateQRCode } from "../utils/generateQRCode.utils.js";
-import { sendPaidTicketEmail } from "../utils/sendPaidTicketEmail.js";
+import { sendPaidTicketMail } from "../utils/sendPaidTicketMail.utils.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
@@ -86,7 +86,7 @@ const verifyPayment = asyncHandler(async (req, res) => {
   await payment.save();
 
   // non‑blocking
-  sendPaidTicketEmail(booking._id).catch(() => {});
+  sendPaidTicketMail(booking._id).catch(() => {});
 
   return res.status(200).json(
     new ApiResponse(200, booking, "Payment successful & booking confirmed")

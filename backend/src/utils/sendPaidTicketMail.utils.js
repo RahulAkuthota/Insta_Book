@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { Booking } from "../models/booking.model.js";
 import { ApiError } from "./ApiError.js";
 
-const sendPaidTicketEmail = async (bookingId) => {
+const sendPaidTicketMail = async (bookingId) => {
   // 1️⃣ Fetch booking with relations
   const booking = await Booking.findById(bookingId)
     .populate("userId", "name email")
@@ -17,7 +17,7 @@ const sendPaidTicketEmail = async (bookingId) => {
     throw new ApiError(400, "QR code not generated for booking");
   }
 
-  // 2️⃣ Convert Base64 QR → Buffer (CRITICAL)
+  // 2️⃣ Convert Base64 QR → Buffer
   const base64Data = booking.qrCodeUrl.replace(
     /^data:image\/png;base64,/,
     ""
@@ -29,11 +29,11 @@ const sendPaidTicketEmail = async (bookingId) => {
     service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS, // Gmail App Password
+      pass: process.env.EMAIL_PASS,
     },
   });
 
-  // 4️⃣ Email HTML (CID reference)
+  // 4️⃣ Email HTML (FIXED)
   const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -41,18 +41,27 @@ const sendPaidTicketEmail = async (bookingId) => {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f2;">
 <tr>
 <td align="center" style="padding:20px;">
-<table width="100%" cellpadding="0" cellspacing="0"
-style="max-width:600px; background:#ffffff; font-family:Arial, Helvetica, sans-serif; color:#222; border-radius:6px; overflow:hidden;">
 
+<table width="100%" cellpadding="0" cellspacing="0"
+style="max-width:600px; background:#ffffff; font-family:Arial, Helvetica, sans-serif; color:#222;">
+
+<!-- HEADER -->
 <tr>
-<td style="background:orange; padding:16px 24px; color:#ffffff;">
+<td bgcolor="orange" style="padding:16px 24px;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+<td style="color:#ffffff;">
 <h2 style="margin:0;">Booking Confirmed</h2>
 <p style="margin:4px 0 0; font-size:13px;">
 Booking ID: <strong>${booking._id}</strong>
 </p>
 </td>
 </tr>
+</table>
+</td>
+</tr>
 
+<!-- GREETING -->
 <tr>
 <td style="padding:20px 24px;">
 <p>Hi <strong>${booking.userId.name}</strong>,</p>
@@ -60,60 +69,80 @@ Booking ID: <strong>${booking._id}</strong>
 </td>
 </tr>
 
+<!-- EVENT DETAILS -->
 <tr>
 <td style="padding:0 24px 12px;">
-<table width="100%" style="font-size:14px;">
+<table width="100%" cellpadding="6" cellspacing="0" style="font-size:14px;">
 <tr>
-<td style="color:#888; width:35%;">Event</td>
-<td><strong>${booking.eventId.title}</strong></td>
+<td width="35%" style="color:#888;">Event</td>
+<td align="right"><strong>${booking.eventId.title}</strong></td>
 </tr>
 <tr>
 <td style="color:#888;">Date</td>
-<td>${new Date(booking.eventId.date).toDateString()}</td>
+<td align="right">${new Date(booking.eventId.date).toDateString()}</td>
+</tr>
+<tr>
+<td style="color:#888;">Event Start Time</td>
+<td>${booking.eventId.startTime}</td>
 </tr>
 <tr>
 <td style="color:#888;">Venue</td>
-<td>${booking.eventId.location}</td>
+<td align="right">${booking.eventId.location}</td>
 </tr>
 </table>
 </td>
 </tr>
 
+<!-- TICKET DETAILS -->
 <tr>
 <td style="padding:12px 24px;">
-<table width="100%" style="font-size:14px;">
+<table width="100%" cellpadding="6" cellspacing="0" style="font-size:14px;">
 <tr>
-<td style="color:#888; width:35%;">Ticket Type</td>
-<td>${booking.ticketId.type}</td>
+<td width="35%" style="color:#888;">Ticket Type</td>
+<td align="right">${booking.ticketId.type}</td>
 </tr>
 <tr>
 <td style="color:#888;">Quantity</td>
-<td>${booking.quantity}</td>
+<td align="right">${booking.quantity}</td>
 </tr>
-<td style="color:#888;">Quantity</td>
-<td>${booking.ticketId.price * booking.quantity }</td>
+<tr>
+<td style="color:#888;">Amount</td>
+<td align="right">₹${booking.ticketId.price * booking.quantity}</td>
 </tr>
 <tr>
 <td>Status</td>
-<td style="color:#2e7d32; font-weight:bold;">CONFIRMED</td>
+<td align="right" style="color:#2e7d32; font-weight:bold;">
+CONFIRMED
+</td>
 </tr>
 </table>
 </td>
 </tr>
 
+<!-- QR CODE -->
 <tr>
 <td align="center" style="padding:20px;">
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td align="center">
 <img
-  src="cid:ticket-qr"
-  alt="QR Code"
-  style="width:180px; border:1px solid #eee; padding:8px;"
+src="cid:ticket-qr"
+width="180"
+style="display:block; border:1px solid #eee; padding:8px;"
+alt="QR Code"
 />
-<p style="font-size:12px; color:#666;">
+</td>
+</tr>
+<tr>
+<td align="center" style="font-size:12px; color:#666; padding-top:6px;">
 Show this QR code at the entry gate
-</p>
+</td>
+</tr>
+</table>
 </td>
 </tr>
 
+<!-- FOOTER -->
 <tr>
 <td style="padding:14px 24px; background:#fafafa; font-size:12px; color:#777; text-align:center;">
 <strong>InstaBook</strong><br/>
@@ -122,6 +151,7 @@ This is a system-generated ticket.
 </tr>
 
 </table>
+
 </td>
 </tr>
 </table>
@@ -129,7 +159,7 @@ This is a system-generated ticket.
 </html>
 `;
 
-  // 5️⃣ Send mail with CID attachment (KEY PART)
+  // 5️⃣ Send mail
   await transporter.sendMail({
     from: `"InstaBook" <${process.env.EMAIL_USER}>`,
     to: booking.userId.email,
@@ -139,10 +169,10 @@ This is a system-generated ticket.
       {
         filename: "ticket-qr.png",
         content: qrBuffer,
-        cid: "ticket-qr", // MUST match img src
+        cid: "ticket-qr",
       },
     ],
   });
 };
 
-export { sendTicketEmail };
+export { sendPaidTicketMail };

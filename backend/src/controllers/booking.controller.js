@@ -6,8 +6,9 @@ import { Ticket } from "../models/ticket.model.js";
 import { Event } from "../models/event.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateQRCode } from "../utils/generateQRCode.utils.js"
-import { sendTicketEmail} from "../utils/sendTicketMail.utils.js"
+import { sendFreeTicketMail} from "../utils/sendTicketMail.utils.js"
 import Razorpay from "razorpay"
+import { Payment } from "../models/payment.model.js"
 
 const createFreeBooking = asyncHandler(async (req, res) => {
   const { ticketId, eventId } = req.params;
@@ -74,7 +75,7 @@ const createFreeBooking = asyncHandler(async (req, res) => {
   booking.qrCodeUrl=qrUrl;
   await booking.save();
 
-  await sendTicketEmail(booking._id.toString())
+  await sendFreeTicketMail(booking._id.toString())
   .then(data=>console.log("✅ Email sent"))
   .catch(error=>console.error("❌ Error sending email:", error))
   
@@ -114,6 +115,11 @@ const createPaidBooking = asyncHandler(async (req, res) => {
   const { eventId, ticketId } = req.params;
   const { quantity } = req.body;
   const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(ticketId) ||
+      !mongoose.Types.ObjectId.isValid(eventId)) {
+    throw new ApiError(400, "Invalid ID format");
+  }
 
   if (!quantity || quantity <= 0) {
     throw new ApiError(400, "Invalid quantity");

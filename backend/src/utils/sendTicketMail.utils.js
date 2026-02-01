@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { Booking } from "../models/booking.model.js";
 import { ApiError } from "./ApiError.js";
 
-const sendTicketEmail = async (bookingId) => {
+const sendFreeTicketMail = async (bookingId) => {
   // 1️⃣ Fetch booking with relations
   const booking = await Booking.findById(bookingId)
     .populate("userId", "name email")
@@ -70,6 +70,10 @@ Booking ID: <strong>${booking._id}</strong>
 <tr>
 <td style="color:#888;">Date</td>
 <td>${new Date(booking.eventId.date).toDateString()}</td>
+</tr>
+<tr>
+<td style="color:#888;">Event Start Time</td>
+<td>${booking.eventId.startTime}</td>
 </tr>
 <tr>
 <td style="color:#888;">Venue</td>
@@ -142,4 +146,4 @@ This is a system-generated ticket.
   });
 };
 
-export { sendTicketEmail };
+export { sendFreeTicketMail };

@@ -46,10 +46,12 @@ const bookingSchema = new mongoose.Schema(
     paymentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment",
-      required: function () {
-        return this.paymentRequired;
-      },
+      // required: function () {
+      //   return this.paymentRequired;
+      // },
     },
+
+    expiresAt: { type: Date },
 
     qrCodeUrl: {
       type: String,

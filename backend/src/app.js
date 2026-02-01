@@ -8,6 +8,7 @@ import adminRouter from "./routes/admin.routes.js";
 import eventRouter from "./routes/event.routes.js";
 import ticketRouter from "./routes/ticket.routes.js";
 import bookingRouter from "./routes/booking.routes.js"
+import paymentRouter from "./routes/payment.routes.js"
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/event", eventRouter);
 app.use("/api/v1/ticket", ticketRouter);
 app.use("/api/v1/booking" , bookingRouter)
+app.use("/api/v1/payment" , paymentRouter)
 
 /* ================= 404 HANDLER ================= */
 
