@@ -1,14 +1,19 @@
 import { Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
+import AdminRoute from "./AdminRoute";
+import OrganizerRoute from "./OrganizerRoute";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import EmailVerified from "../pages/auth/EmailVerified";
+
 import Events from "../pages/events/Events.jsx";
 import EventDetails from "../pages/EventDetails.jsx";
 import MyBookings from "../pages/booking/ MyBookings.jsx";
-import AdminRoute from "./AdminRoute";
+import BookingSuccess from "../pages/booking/BookingSuccess";
+
 import PendingOrganizers from "../pages/admin/PendingOrganizers";
-import OrganizerRoute from "./OrganizerRoute";
+
 import OrganizerLayout from "../pages/organizer/OrganizerLayout";
 import CreateEvent from "../pages/organizer/CreateEvent";
 import OrganizerEvent from "../pages/organizer/OrganizerEvent.jsx";
@@ -16,35 +21,20 @@ import OrganizerDashboard from "../pages/organizer/Dashboard.jsx";
 import OrganizerAnalytics from "../pages/organizer/Dashboard.jsx";
 import EventAnalytics from "../pages/organizer/EventAnalytics.jsx";
 import ManageTickets from "../pages/organizer/ManageTickets.jsx";
-import BookingSuccess from "../pages/booking/BookingSuccess";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* public */}
+      {/* -------- PUBLIC -------- */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/email-verified" element={<EmailVerified />} />
 
-      {/* protected */}
-      <Route
-        path="/events"
-        element={
-          // <PrivateRoute>
-          <Events />
-          // </PrivateRoute>
-        }
-      />
+      {/* -------- EVENTS -------- */}
+      <Route path="/events" element={<Events />} />
+      <Route path="/events/:eventId" element={<EventDetails />} />
 
-      <Route
-        path="/events/:eventId"
-        element={
-          // <PrivateRoute>
-          <EventDetails />
-          // </PrivateRoute>
-        }
-      />
-
-      {/* default */}
+      {/* -------- DEFAULT -------- */}
       <Route
         path="/"
         element={
@@ -54,6 +44,7 @@ const AppRoutes = () => {
         }
       />
 
+      {/* -------- USER -------- */}
       <Route
         path="/mybookings"
         element={
@@ -62,6 +53,7 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+
       <Route
         path="/booking-success"
         element={
@@ -71,6 +63,7 @@ const AppRoutes = () => {
         }
       />
 
+      {/* -------- ADMIN -------- */}
       <Route
         path="/admin/organizers"
         element={
@@ -80,6 +73,7 @@ const AppRoutes = () => {
         }
       />
 
+      {/* -------- ORGANIZER -------- */}
       <Route
         path="/organizer"
         element={

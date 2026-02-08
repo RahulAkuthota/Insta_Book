@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { registerUser } from "../../api/auth.api";
-import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-hot-toast";
 
 const Register = () => {
@@ -12,7 +11,6 @@ const Register = () => {
   const [errMsg, setErrMsg] = useState(null);
 
   const navigate = useNavigate();
-  const { setUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,12 +18,9 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const res = await registerUser({ name, email, password });
+      await registerUser({ name, email, password });
 
-      // ✅ auto-login
-      setUser(res.data.data);
-
-      toast.success("Registered successfully", {
+      toast.success("Verification link sent to your email 📧", {
         style: {
           color: "#065f46",
           background: "#ecfdf5",
@@ -33,7 +28,8 @@ const Register = () => {
         },
       });
 
-      navigate("/events", { replace: true });
+      // ✅ go to login (NOT events)
+      navigate("/login");
     } catch (err) {
       setErrMsg(err.response?.data?.message || "Registration failed");
     } finally {
@@ -43,11 +39,9 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:grid md:grid-cols-2">
-
       {/* LEFT — FORM */}
       <div className="flex flex-1 items-center justify-center bg-gray-50 px-4 py-12">
         <div className="w-full max-w-sm">
-
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">
             Create account
           </h1>
@@ -68,7 +62,7 @@ const Register = () => {
               </label>
               <input
                 type="text"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -81,7 +75,7 @@ const Register = () => {
               </label>
               <input
                 type="email"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -94,7 +88,7 @@ const Register = () => {
               </label>
               <input
                 type="password"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -119,13 +113,9 @@ const Register = () => {
         </div>
       </div>
 
-      {/* RIGHT — BRAND (DESKTOP ONLY) */}
-      <div className="hidden md:flex items-center justify-center bg-gray-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          {/* your image later */}
-        </div>
-
-        <div className="relative z-10 max-w-md px-8">
+      {/* RIGHT — BRAND */}
+      <div className="hidden md:flex items-center justify-center bg-gray-900 text-white">
+        <div className="max-w-md px-8">
           <h2 className="text-3xl font-semibold mb-4">
             Welcome to InstaBook
           </h2>

@@ -1,4 +1,5 @@
-// sendOtpEmail.utils.js
+
+// utils/sendVerifyEmail.utils.js
 
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
@@ -6,7 +7,7 @@ import { ApiError } from "./ApiError.js";
 
 dotenv.config();
 
-// Create transporter
+/* ---------------- TRANSPORTER ---------------- */
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -16,11 +17,11 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
- * Send OTP email for verification
- * @param {string} recipient - email address
- * @param {string} otp - 6 digit OTP
+ * Send email verification link
+ * @param {string} recipient - user email
+ * @param {string} verifyUrl - verification link
  */
-const sendOtpEmail = async (recipient, otp) => {
+const sendVerifyEmail = async (recipient, verifyUrl) => {
   try {
     const mailOptions = {
       from: `"InstantBook" <${process.env.EMAIL_USER}>`,
@@ -45,7 +46,7 @@ body {
   padding: 40px 12px;
 }
 .card {
-  max-width: 520px;
+  max-width: 620px;
   margin: auto;
   background: #ffffff;
   border-radius: 16px;
@@ -54,89 +55,75 @@ body {
 }
 .header {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  padding: 32px;
+  padding: 36px;
   text-align: center;
   color: #ffffff;
 }
 .header h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 30px;
 }
 .content {
-  padding: 32px;
+  padding: 36px;
   color: #111827;
+  line-height: 1.7;
+}
+.cta {
   text-align: center;
+  margin: 36px 0;
 }
-.content h2 {
-  margin-top: 0;
-  font-size: 22px;
-}
-.otp-box {
-  margin: 24px auto;
-  padding: 16px 24px;
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: 8px;
-  background: #f1f5f9;
-  border-radius: 12px;
+.cta a {
   display: inline-block;
-  color: #4f46e5;
-}
-.note {
-  font-size: 14px;
-  color: #6b7280;
-  margin-top: 16px;
-}
-.warning {
-  margin-top: 20px;
-  font-size: 13px;
-  color: #b91c1c;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff !important;
+  text-decoration: none;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
 }
 .footer {
   text-align: center;
-  padding: 20px;
+  padding: 24px;
   font-size: 12px;
   color: #6b7280;
   background: #f9fafb;
 }
-.brand {
-  font-weight: 700;
-  color: #6366f1;
-}
 </style>
 </head>
-
 <body>
 <div class="wrapper">
   <div class="card">
-    <!-- Header -->
     <div class="header">
-      <h1>InstantBook 🔐</h1>
-      <p>Email Verification</p>
+      <h1>Verify your email 🔐</h1>
     </div>
 
-    <!-- Content -->
     <div class="content">
-      <h2>Verify your email</h2>
       <p>
-        Use the OTP below to verify your email address and activate your
-        <span class="brand">InstantBook</span> account.
+        Thanks for signing up with <strong>InstantBook</strong>!
       </p>
 
-      <div class="otp-box">${otp}</div>
-
-      <p class="note">
-        This OTP is valid for <strong>10 minutes</strong>.
+      <p>
+        Please confirm your email address to activate your account.
       </p>
 
-      <p class="warning">
-        If you didn’t request this, you can safely ignore this email.
+      <div class="cta">
+        <a href="${verifyUrl}">Verify Email</a>
+      </div>
+
+      <p>
+        This link is valid for <strong>15 minutes</strong>.
+        If you didn’t create an account, you can safely ignore this email.
+      </p>
+
+      <p>
+        Cheers,<br />
+        <strong>The InstantBook Team</strong>
       </p>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
-      © 2026 InstantBook · Secure & seamless event booking
+      © 2026 InstantBook · Secure & seamless bookings
     </div>
   </div>
 </div>
@@ -146,11 +133,11 @@ body {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("✅ OTP email sent:", info.response);
+    console.log("✅ Verification email sent:", info.response);
   } catch (error) {
-    console.error("❌ Error sending OTP email:", error);
-    throw new ApiError(500, "Failed to send OTP email");
+    console.error("❌ Error sending verification email:", error);
+    throw new ApiError(500, "Failed to send verification email");
   }
 };
 
-export { sendOtpEmail };
+export { sendVerifyEmail };

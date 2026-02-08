@@ -1,17 +1,23 @@
 import { Router } from "express";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getCurrentUser,
+  verifyEmail,
+  resendVerification,
+} from "../controllers/auth.controller.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
-import {getCurrentUser, loginUser, logoutUser ,registerUser} from "../controllers/auth.controller.js"
 
+const router = Router();
 
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.post("/logout", verifyJWT, logoutUser);
+router.get("/me", verifyJWT, getCurrentUser);
 
-const router=Router()
+// 🔥 ADD THESE
+router.get("/verify-email", verifyEmail);
+router.post("/resend-verification", resendVerification);
 
-
-router.route("/register").post(registerUser);
-router.route("/login").post(loginUser);
-router.route("/logout").post(verifyJWT, logoutUser);
-router.route("/me").get(verifyJWT , getCurrentUser)
-
-
-
-export default router
+export default router;

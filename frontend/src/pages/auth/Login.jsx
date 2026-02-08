@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { loginUser } from "../../api/auth.api";
+import { loginUser, resendVerification } from "../../api/auth.api";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -9,6 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState(null);
+  const [notVerified, setNotVerified] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,15 +20,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrMsg(null);
+    setNotVerified(false);
     setLoading(true);
 
     try {
       const res = await loginUser({ email, password });
-
-      // ✅ update auth state
       setUser(res.data.data);
 
-      // ✅ success toast
       toast.success("Logged in successfully", {
         style: {
           color: "#065f46",
@@ -38,31 +37,35 @@ const Login = () => {
 
       navigate(from, { replace: true });
     } catch (err) {
-      const message =
-        err.response?.data?.message || "Login failed";
+      const message = err.response?.data?.message;
 
-      setErrMsg(message);
+      if (message === "EMAIL_NOT_VERIFIED") {
+        setErrMsg("Your email is not verified");
+        setNotVerified(true);
+        return;
+      }
 
-      // ✅ error toast
-      toast.error(message, {
-        style: {
-          color: "#7f1d1d",
-          background: "#fef2f2",
-          border: "1px solid #fecaca",
-        },
-      });
+      setErrMsg(message || "Login failed");
+      toast.error(message || "Login failed");
     } finally {
-      setLoading(false); // ❗ REQUIRED
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await resendVerification({ email });
+      toast.success("Verification link sent to your email 📧");
+    } catch {
+      toast.error("Failed to send verification email");
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col md:grid md:grid-cols-2">
-
-      {/* LEFT — FORM */}
+      {/* LEFT */}
       <div className="flex flex-1 items-center justify-center bg-gray-50 px-4 py-12">
         <div className="w-full max-w-sm">
-
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">
             Sign in
           </h1>
@@ -76,6 +79,17 @@ const Login = () => {
             </div>
           )}
 
+          {notVerified && (
+            <div className="mb-4 text-center">
+              <button
+                onClick={handleResend}
+                className="text-sm font-medium text-indigo-600 hover:underline"
+              >
+                Verify email?
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -83,7 +97,7 @@ const Login = () => {
               </label>
               <input
                 type="email"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -96,7 +110,7 @@ const Login = () => {
               </label>
               <input
                 type="password"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -121,15 +135,14 @@ const Login = () => {
         </div>
       </div>
 
-      {/* RIGHT — BRAND (DESKTOP ONLY) */}
-      <div className="hidden md:flex items-center justify-center bg-gray-900 text-white relative overflow-hidden">
-        <div className="relative z-10 max-w-md px-8">
+      {/* RIGHT */}
+      <div className="hidden md:flex items-center justify-center bg-gray-900 text-white">
+        <div className="max-w-md px-8">
           <h2 className="text-3xl font-semibold mb-4">
             Welcome to InstaBook
           </h2>
           <p className="text-gray-300 text-sm leading-relaxed">
-            Book events effortlessly with a clean, secure,
-            and professional platform built for scale.
+            Book events effortlessly with a clean, secure platform.
           </p>
         </div>
       </div>
