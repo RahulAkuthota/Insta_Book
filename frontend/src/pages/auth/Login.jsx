@@ -15,6 +15,7 @@ const Login = () => {
   const location = useLocation();
   const { setUser } = useAuth();
 
+  const fromRegister = location.state?.fromRegister;
   const from = location.state?.from || "/events";
 
   const handleSubmit = async (e) => {
@@ -27,14 +28,7 @@ const Login = () => {
       const res = await loginUser({ email, password });
       setUser(res.data.data);
 
-      toast.success("Logged in successfully", {
-        style: {
-          color: "#065f46",
-          background: "#ecfdf5",
-          border: "1px solid #a7f3d0",
-        },
-      });
-
+      toast.success("Logged in successfully");
       navigate(from, { replace: true });
     } catch (err) {
       const message = err.response?.data?.message;
@@ -69,9 +63,13 @@ const Login = () => {
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">
             Sign in
           </h1>
-          <p className="text-sm text-gray-500 mb-6">
-            Welcome back. Please login to continue.
-          </p>
+
+          {fromRegister && (
+            <div className="mb-4 rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-700">
+              We’ve sent a verification link to your email.
+              Please verify before logging in.
+            </div>
+          )}
 
           {errMsg && (
             <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
@@ -91,42 +89,34 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full rounded-md border px-3 py-2"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full rounded-md border px-3 py-2"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-gray-900 py-2.5 text-white font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full rounded-md bg-gray-900 py-2.5 text-white disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-gray-600 text-center">
+          <p className="mt-6 text-sm text-center">
             Don’t have an account?{" "}
             <Link to="/register" className="text-indigo-600 font-medium">
               Sign up
@@ -138,10 +128,8 @@ const Login = () => {
       {/* RIGHT */}
       <div className="hidden md:flex items-center justify-center bg-gray-900 text-white">
         <div className="max-w-md px-8">
-          <h2 className="text-3xl font-semibold mb-4">
-            Welcome to InstaBook
-          </h2>
-          <p className="text-gray-300 text-sm leading-relaxed">
+          <h2 className="text-3xl font-semibold mb-4">Welcome to InstaBook</h2>
+          <p className="text-gray-300 text-sm">
             Book events effortlessly with a clean, secure platform.
           </p>
         </div>

@@ -21,15 +21,13 @@ const Register = () => {
       await registerUser({ name, email, password });
 
       toast.success("Verification link sent to your email 📧", {
-        style: {
-          color: "#065f46",
-          background: "#ecfdf5",
-          border: "1px solid #a7f3d0",
-        },
+        duration: 4000,
       });
 
-      // ✅ go to login (NOT events)
-      navigate("/login");
+      // 👉 go to login with info state
+      navigate("/login", {
+        state: { fromRegister: true, email },
+      });
     } catch (err) {
       setErrMsg(err.response?.data?.message || "Registration failed");
     } finally {
@@ -39,7 +37,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:grid md:grid-cols-2">
-      {/* LEFT — FORM */}
+      {/* LEFT */}
       <div className="flex flex-1 items-center justify-center bg-gray-50 px-4 py-12">
         <div className="w-full max-w-sm">
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">
@@ -56,55 +54,43 @@ const Register = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Name"
+              className="w-full rounded-md border px-3 py-2"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full rounded-md border px-3 py-2"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full rounded-md border px-3 py-2"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-gray-900 py-2.5 text-white font-medium hover:bg-gray-800 disabled:opacity-60"
+              className="w-full rounded-md bg-gray-900 py-2.5 text-white disabled:opacity-60"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-gray-600 text-center">
+          <p className="mt-6 text-sm text-center">
             Already have an account?{" "}
             <Link to="/login" className="text-indigo-600 font-medium">
               Sign in
@@ -113,13 +99,11 @@ const Register = () => {
         </div>
       </div>
 
-      {/* RIGHT — BRAND */}
+      {/* RIGHT */}
       <div className="hidden md:flex items-center justify-center bg-gray-900 text-white">
         <div className="max-w-md px-8">
-          <h2 className="text-3xl font-semibold mb-4">
-            Welcome to InstaBook
-          </h2>
-          <p className="text-gray-300 text-sm leading-relaxed">
+          <h2 className="text-3xl font-semibold mb-4">Welcome to InstaBook</h2>
+          <p className="text-gray-300 text-sm">
             Discover events, book tickets, and enjoy seamless experiences.
           </p>
         </div>

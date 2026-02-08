@@ -39,7 +39,10 @@ const handleLogout = async () => {
   setOpen(false);
   setUserMenu(false);
 
-  toast.error("Logged out successfully");
+  toast.error("Logged out successfully", {
+  duration: 2000, // ⏱️ 2 seconds (default is ~4000ms)
+});
+
 
   navigate("/events", { replace: true });
 };

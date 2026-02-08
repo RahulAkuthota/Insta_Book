@@ -29,7 +29,7 @@ const registerUser = asyncHandler(async (req, res) => {
   );
 
   const verifyUrl =
-    `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  `${process.env.BACKEND_URL}/api/v1/user/verify-email?token=${token}`;
 
   // fire-and-forget
   sendVerifyEmail(user.email, verifyUrl).catch(console.error);
