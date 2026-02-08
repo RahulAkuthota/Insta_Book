@@ -151,10 +151,6 @@ const getEventById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
-  if (req.organizer._id.toString() !== event.organizerId.toString()) {
-    throw new ApiError(403, "Organizer access needed");
-  }
-
   return res.status(200).json(
     new ApiResponse(200, event, "Event fetched successfully")
   );

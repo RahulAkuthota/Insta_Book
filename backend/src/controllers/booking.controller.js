@@ -44,6 +44,22 @@ const createFreeBooking = asyncHandler(async (req, res) => {
     throw new ApiError(400, "This is not a free ticket");
   }
 
+    // ❌ Prevent duplicate FREE ticket booking
+  const existingBooking = await Booking.findOne({
+    userId,
+    eventId,
+    ticketId,
+    bookingStatus: "CONFIRMED",
+  });
+
+  if (existingBooking) {
+    throw new ApiError(
+      400,
+      "You have already booked this free ticket"
+    );
+  }
+
+
   // Atomic seat lock
   const updatedTicket = await Ticket.findOneAndUpdate(
     {
@@ -90,7 +106,7 @@ const createFreeBooking = asyncHandler(async (req, res) => {
 const myBookings = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
-  const bookings = await Booking.find({ userId })
+  const bookings = await Booking.find({ userId ,bookingStatus: "CONFIRMED" })
     .populate("eventId")
     .populate("ticketId")
     .sort({ createdAt: -1 });

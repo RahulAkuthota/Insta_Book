@@ -91,13 +91,19 @@ const loginUser = asyncHandler(async (req, res) => {
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   };
 
+  const responseUser = {
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  };
 
   return res
     .status(200)
     .cookie("instabookAccessToken", accessToken, cookieOptions)
     .cookie("instabookRefreshToken", refreshToken, cookieOptions)
     .json(
-      new ApiResponse(200, {}, `${user.name} logged in successfully`)
+      new ApiResponse(200, responseUser , `${user.name} logged in successfully`)
     );
 });
 
@@ -130,6 +136,24 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Logged out successfully"));
 });
 
+const getCurrentUser = asyncHandler(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  const user = {
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    role: req.user.role,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User fetched"));
+});
+
+
 /* ================= EXPORTS ================= */
 
-export { registerUser, loginUser, logoutUser };
+export { registerUser, loginUser, logoutUser , getCurrentUser};
