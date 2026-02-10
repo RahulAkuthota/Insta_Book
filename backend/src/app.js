@@ -21,7 +21,6 @@ const allowedOrigins = process.env.CORS_ORIGIN
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow Postman, server-to-server, cron jobs
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
@@ -30,11 +29,10 @@ app.use(
 
       return callback(new Error("Not allowed by CORS"));
     },
-    credentials: true, // IMPORTANT for cookies
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
 
 /* ================= BODY + COOKIES ================= */
 
