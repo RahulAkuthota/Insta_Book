@@ -40,7 +40,7 @@ import mongoose from "mongoose"
 
 
   // mail is async, non-blocking
-  sendOrganizerApplicationMail(
+  await sendOrganizerApplicationMail(
     user.email,
     user,
     organizationName
