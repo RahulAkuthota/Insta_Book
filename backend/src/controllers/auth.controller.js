@@ -35,7 +35,7 @@ const registerUser = asyncHandler(async (req, res) => {
   `${process.env.BACKEND_URL}/api/v1/user/verify-email?token=${token}`;
 
   // fire-and-forget
-  sendVerifyEmail(user.email, verifyUrl).catch(console.error);
+  await sendVerifyEmail(user.email, verifyUrl).catch(console.error);
 
   return res.status(201).json(
     new ApiResponse(
@@ -133,13 +133,22 @@ const loginUser = asyncHandler(async (req, res) => {
     role: user.role,
   };
 
-  return res
-    .cookie("instabookAccessToken", accessToken, { httpOnly: true })
-    .cookie("instabookRefreshToken", refreshToken, { httpOnly: true })
-    .json(
-      new ApiResponse(200, responseUser, "Logged in successfully")
-    );
-});
+  res
+    .cookie("instabookAccessToken", accessToken, {
+      httpOnly: true,
+      secure: true,    
+      sameSite: "none",  
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .cookie("instabookRefreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .json(new ApiResponse(200, responseUser, "Logged in successfully"));
+  
+  });
 
 /* ================= LOGOUT ================= */
 
