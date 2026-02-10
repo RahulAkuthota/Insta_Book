@@ -98,7 +98,7 @@ const handleLogout = async () => {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/events" className="text-xl font-bold text-indigo-600">
-              InstaBook
+              InstantBook
             </Link>
 
             {/* Desktop */}

@@ -107,6 +107,16 @@ const Login = () => {
               required
             />
 
+            {/* 🔑 FORGOT PASSWORD */}
+            <div className="text-right">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-indigo-600 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -128,7 +138,9 @@ const Login = () => {
       {/* RIGHT */}
       <div className="hidden md:flex items-center justify-center bg-gray-900 text-white">
         <div className="max-w-md px-8">
-          <h2 className="text-3xl font-semibold mb-4">Welcome to InstaBook</h2>
+          <h2 className="text-3xl font-semibold mb-4">
+            Welcome to InstaBook
+          </h2>
           <p className="text-gray-300 text-sm">
             Book events effortlessly with a clean, secure platform.
           </p>

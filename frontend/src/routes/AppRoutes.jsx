@@ -21,6 +21,8 @@ import OrganizerDashboard from "../pages/organizer/Dashboard.jsx";
 import OrganizerAnalytics from "../pages/organizer/Dashboard.jsx";
 import EventAnalytics from "../pages/organizer/EventAnalytics.jsx";
 import ManageTickets from "../pages/organizer/ManageTickets.jsx";
+import ForgotPassword from "../pages/auth/ForgotPassword.jsx"
+import ResetPassword from "../pages/auth/ResetPassword.jsx"
 
 const AppRoutes = () => {
   return (
@@ -29,6 +31,8 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/email-verified" element={<EmailVerified />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* -------- EVENTS -------- */}
       <Route path="/events" element={<Events />} />

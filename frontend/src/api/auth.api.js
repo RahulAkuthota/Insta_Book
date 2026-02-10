@@ -15,3 +15,10 @@ export const logoutUser = () =>
 
 export const getMe = () =>
   api.get("/user/me");
+
+export const forgotPassword = (data) =>
+  api.post("/user/forgot-password", data);
+
+export const resetPassword = (token, data) =>
+  api.post(`/user/reset-password/${token}`, data);
+

@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import {
-  getEventTickets,
   createTicket,
   deleteTicket,
+  getEventTickets
 } from "../../api/ticket.api.js";
+
 
 const ALL_TICKET_TYPES = ["FREE", "GENERAL", "PLATINUM"];
 
@@ -37,21 +38,32 @@ const ManageTickets = () => {
 
   const fetchTickets = async () => {
     try {
+       
       const res = await getEventTickets(eventId);
-
-      if (Array.isArray(res.data.data)) {
-        setTickets(res.data.data);
-        setEvent(null);
-      } else {
-        setTickets(res.data.data?.tickets || []);
-        setEvent(res.data.data?.event || null);
+ 
+      // Case 1: API returns { tickets, event }
+      if (res.data.data?.tickets) {
+        setTickets(res.data.data.tickets);
+        setEvent(res.data.data.event);
       }
-    } catch {
-      toast.error("Failed to load tickets");
+      // Case 2: API returns only tickets array
+      else if (Array.isArray(res.data.data)) {
+        setTickets(res.data.data);
+        // ✅ DO NOT reset event here
+      } else {
+        setTickets([]);
+      }
+    } catch (err) {
+      // ❌ No error toast for "no tickets"
+      if (err.response?.status !== 404) {
+        toast.error("Failed to load tickets");
+      }
+      setTickets([]);
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchTickets();

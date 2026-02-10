@@ -12,9 +12,25 @@ const Register = () => {
 
   const navigate = useNavigate();
 
+  // ✅ validations
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPasswordValid = password.length >= 6;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrMsg(null);
+
+    // ❌ block invalid submit
+    if (!isEmailValid) {
+      setErrMsg("Please enter a valid email id");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      setErrMsg("Password must be at least 6 characters");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -24,7 +40,6 @@ const Register = () => {
         duration: 4000,
       });
 
-      // 👉 go to login with info state
       navigate("/login", {
         state: { fromRegister: true, email },
       });
@@ -54,6 +69,7 @@ const Register = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* NAME */}
             <input
               type="text"
               placeholder="Name"
@@ -63,23 +79,39 @@ const Register = () => {
               required
             />
 
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full rounded-md border px-3 py-2"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            {/* EMAIL */}
+            <div>
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full rounded-md border px-3 py-2"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              {!isEmailValid && email && (
+                <p className="mt-1 text-xs text-red-600">
+                  Please enter a valid email id
+                </p>
+              )}
+            </div>
 
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full rounded-md border px-3 py-2"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            {/* PASSWORD */}
+            <div>
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full rounded-md border px-3 py-2"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              {!isPasswordValid && password && (
+                <p className="mt-1 text-xs text-red-600">
+                  Please create a strong password (min 6 characters)
+                </p>
+              )}
+            </div>
 
             <button
               type="submit"
@@ -102,7 +134,9 @@ const Register = () => {
       {/* RIGHT */}
       <div className="hidden md:flex items-center justify-center bg-gray-900 text-white">
         <div className="max-w-md px-8">
-          <h2 className="text-3xl font-semibold mb-4">Welcome to InstaBook</h2>
+          <h2 className="text-3xl font-semibold mb-4">
+            Welcome to InstaBook
+          </h2>
           <p className="text-gray-300 text-sm">
             Discover events, book tickets, and enjoy seamless experiences.
           </p>

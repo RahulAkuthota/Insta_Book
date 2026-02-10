@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import {
   getOrganizerEvents,
   togglePublishEvent,
+  deleteEvent,
 } from "../../api/events.api";
 
 /* -------- Utils -------- */
@@ -26,7 +27,7 @@ const OrganizerEvent = () => {
     try {
       const res = await getOrganizerEvents();
       setEvents(res.data.data || []);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load events");
     } finally {
       setLoading(false);
@@ -44,8 +45,22 @@ const OrganizerEvent = () => {
       toast.success(res.data.message);
       fetchEvents();
     } catch (err) {
+      toast.error(err.response?.data?.message || "Action failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // ✅ DELETE — backend enforces ticket & published checks
+  const handleDelete = async (id) => {
+    try {
+      setActionLoading(id);
+      await deleteEvent(id);
+      toast.success("Event deleted successfully");
+      fetchEvents();
+    } catch (err) {
       toast.error(
-        err.response?.data?.message || "Action failed"
+        err.response?.data?.message || "Delete failed"
       );
     } finally {
       setActionLoading(null);
@@ -76,7 +91,6 @@ const OrganizerEvent = () => {
         </NavLink>
       </div>
 
-      {/* -------- Empty State -------- */}
       {events.length === 0 ? (
         <div className="rounded-xl border border-dashed bg-white p-10 text-center text-gray-500">
           You haven’t created any events yet.
@@ -104,10 +118,7 @@ const OrganizerEvent = () => {
 
                 <div className="text-sm text-gray-600 space-y-1">
                   <p>📍 {event.location}</p>
-                  <p>
-                    📅{" "}
-                    {new Date(event.date).toDateString()}
-                  </p>
+                  <p>📅 {new Date(event.date).toDateString()}</p>
                   <p>⏰ {formatTime(event.startTime)}</p>
                 </div>
 
@@ -118,35 +129,51 @@ const OrganizerEvent = () => {
                       : "bg-yellow-100 text-yellow-700"
                   }`}
                 >
-                  {event.isPublished
-                    ? "Published"
-                    : "Draft"}
+                  {event.isPublished ? "Published" : "Draft"}
                 </span>
               </div>
 
               {/* RIGHT */}
               <div className="flex flex-col gap-3 justify-center min-w-[180px]">
-                <button
-                  disabled={actionLoading === event._id}
-                  onClick={() =>
-                    handlePublishToggle(event._id)
-                  }
-                  className={`rounded-lg px-5 py-2 text-sm font-semibold text-white transition ${
-                    event.isPublished
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-indigo-600 hover:bg-indigo-700"
-                  } ${
-                    actionLoading === event._id
-                      ? "opacity-60 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  {actionLoading === event._id
-                    ? "Processing..."
-                    : event.isPublished
-                    ? "Unpublish"
-                    : "Publish"}
-                </button>
+                {/* ✅ PUBLISHED STATE */}
+                {event.isPublished ? (
+                  <button
+                    disabled
+                    className="rounded-lg px-5 py-2 text-sm font-semibold bg-green-600 text-white cursor-not-allowed"
+                  >
+                    Published
+                  </button>
+                ) : (
+                  <>
+                    {/* Publish */}
+                    <button
+                      disabled={actionLoading === event._id}
+                      onClick={() =>
+                        handlePublishToggle(event._id)
+                      }
+                      className={`rounded-lg px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 ${
+                        actionLoading === event._id
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
+                      }`}
+                    >
+                      {actionLoading === event._id
+                        ? "Processing..."
+                        : "Publish"}
+                    </button>
+
+                    {/* ✅ DELETE (backend decides validity) */}
+                    <button
+                      disabled={actionLoading === event._id}
+                      onClick={() =>
+                        handleDelete(event._id)
+                      }
+                      className="rounded-lg px-5 py-2 text-sm font-semibold bg-red-600 text-white hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
 
                 <NavLink
                   to={`/organizer/events/${event._id}/analytics`}

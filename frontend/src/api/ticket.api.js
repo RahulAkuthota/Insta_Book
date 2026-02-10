@@ -5,7 +5,7 @@ export const createTicket = (eventId, payload) => {
 };
 
 export const getEventTickets = (eventId) => {
-  return api.get(`/event/${eventId}/tickets`);
+  return api.get(`/event/organizer/events/${eventId}/tickets`);
 };
 
 // export const updateTicket = (ticketId, payload) => {

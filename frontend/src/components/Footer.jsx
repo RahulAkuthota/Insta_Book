@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="w-full bg-gray-900 text-gray-300">
+      {/* TOP SECTION */}
       <div className="mx-auto max-w-7xl px-6 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-
         {/* BRAND */}
         <div>
           <h3 className="text-lg font-bold text-white">InstaBook</h3>

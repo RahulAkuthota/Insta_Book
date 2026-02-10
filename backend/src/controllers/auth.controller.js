@@ -5,6 +5,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { sendVerifyEmail } from "../utils/sendVerifyEmail.utils.js";
+import crypto from "crypto";
+import { sendResetPasswordEmail } from "../utils/sendResetPasswordEmail.utils.js";
 
 /* ================= REGISTER ================= */
 const registerUser = asyncHandler(async (req, res) => {
@@ -167,6 +169,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Logged out successfully"));
 });
 
+/* ================= GET CURRENT USER ================= */
 const getCurrentUser = asyncHandler(async (req, res) => {
   if (!req.user) {
     throw new ApiError(401, "Unauthorized");
@@ -184,6 +187,72 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "User fetched"));
 });
 
+/* ================= FORGOT PASSWORD ================= */
+const forgotPassword = asyncHandler(async (req, res) => {
+  let { email } = req.body;
+  email = email.toLowerCase().trim();
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    // 🔒 do NOT reveal email existence
+    return res.json(
+      new ApiResponse(200, null, "If email exists, reset link sent")
+    );
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
+  await user.save({ validateBeforeSave: false });
+
+  const resetUrl =
+`${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+  await sendResetPasswordEmail(user.email, resetUrl);
+
+  res.json(
+    new ApiResponse(200, null, "Password reset link sent")
+  );
+});
+
+/* ================= RESET PASSWORD ================= */
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new ApiError(400, "Invalid or expired reset link");
+  }
+
+  user.password = password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  res.json(
+    new ApiResponse(200, null, "Password reset successful")
+  );
+});
+
+
+
 /* ================= EXPORTS ================= */
 export {
   registerUser,
@@ -192,4 +261,6 @@ export {
   logoutUser,
   verifyEmail,
   resendVerification,
+  forgotPassword,
+  resetPassword,
 };

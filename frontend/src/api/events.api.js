@@ -11,15 +11,18 @@ export const getEventById = (eventId) =>
 export const getEventTickets = (eventId) =>
   api.get(`/event/${eventId}/tickets`);
 
-
 export const createEvent = (data) => {
   return api.post("/event/create", data);
 };
+
+export const deleteEvent = (eventId)=>{
+  return api.delete(`/event/delete/${eventId}`);
+}
 
 export const getOrganizerEvents = () => {
   return api.get("/event/organizer/events");
 };
 
 export const togglePublishEvent = (eventId) => {
-  return api.patch(`/events/${eventId}/publish`);
+  return api.patch(`/event/publishevent/${eventId}`);
 };

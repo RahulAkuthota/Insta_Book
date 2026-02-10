@@ -68,7 +68,7 @@ const EventDetails = () => {
 
   const getTicketLabel = (type) => {
     if (type === "FREE") return "Free Pass";
-    if (type === "GENERAL") return "General Admission";
+    if (type === "GENERAL") return "General Pass ";
     if (type === "PLATINUM") return "Platinum Pass";
     return type;
   };
@@ -218,7 +218,7 @@ const EventDetails = () => {
             </h2>
 
             {tickets.map((ticket) => {
-              const soldOut = ticket.availableSeats === 0;
+              const soldOut = (ticket.availableSeats === 0);
 
               return (
                 <div
