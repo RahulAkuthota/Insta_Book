@@ -99,4 +99,53 @@ const deleteTicket = asyncHandler(async (req, res) => {
 });
 
 
-export { createTicket, deleteTicket };
+
+const getTicketAnalytics = asyncHandler(async (req, res) => {
+  const { eventId } = req.params;
+
+  // validate event
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new ApiError(404, "Event not found");
+  }
+
+  // fetch tickets for event
+  const tickets = await Ticket.find({ eventId });
+
+  let totalTicketsSold = 0;
+  let totalRevenue = 0;
+
+  const analytics = tickets.map((ticket) => {
+    const ticketsSold =
+      ticket.totalSeats - ticket.availableSeats;
+
+    const revenue = ticketsSold * ticket.price;
+
+    totalTicketsSold += ticketsSold;
+    totalRevenue += revenue;
+
+    return {
+      _id: ticket._id,
+      type: ticket.type,
+      price: ticket.price,
+      totalSeats: ticket.totalSeats,
+      availableSeats: ticket.availableSeats,
+      ticketsSold,
+      revenue,
+    };
+  });
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      tickets: analytics,
+      summary: {
+        totalTicketsSold,
+        totalRevenue,
+      },
+    })
+  );
+});
+
+
+
+export { createTicket, deleteTicket , getTicketAnalytics };

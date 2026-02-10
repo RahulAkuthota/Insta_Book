@@ -34,18 +34,24 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    
-    refreshToken: {
-      type:String
-    }
+
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    refreshToken: String,
+
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Hash password
 userSchema.pre("save", async function (next) {
   if (this.isModified("password"))
-  this.password = await bcrypt.hash(this.password, 12);
+    this.password = await bcrypt.hash(this.password, 12);
 });
 
 // Compare password
@@ -62,17 +68,15 @@ userSchema.methods.generateAccessToken = function () {
       role: this.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
   );
 };
 
 // Refresh token
 userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(
-    { _id: this._id },
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
-  );
+  return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+  });
 };
 
 export const User = mongoose.model("User", userSchema);
