@@ -7,6 +7,7 @@ import { User } from "../models/user.model.js";
 import { sendVerifyEmail } from "../utils/sendVerifyEmail.utils.js";
 import crypto from "crypto";
 import { sendResetPasswordEmail } from "../utils/sendResetPasswordEmail.utils.js";
+import {sendWelcomeMail } from "../utils/sendWelcomeMail.utils.js"
 
 /* ================= REGISTER ================= */
 const registerUser = asyncHandler(async (req, res) => {
@@ -65,7 +66,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
     user.emailVerified = true;
     await user.save();
   }
-
+  await sendWelcomeMail(user.email, user.name);
   return res.redirect(
   `${process.env.FRONTEND_URL}/email-verified`
 );
