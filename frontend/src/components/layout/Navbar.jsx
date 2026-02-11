@@ -147,6 +147,19 @@ const handleLogout = async () => {
                         </>
                       )}
 
+                      {/* ADMIN OPTIONS */}
+                        {user.role === "ADMIN" && (
+                        <>
+                          <NavLink
+                            to="/admin/organizers"
+                            onClick={() => setUserMenu(false)}
+                            className="block px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Pending Requests
+                          </NavLink>
+                          </>
+                      )}
+
                       {/* APPLY ORGANIZER */}
                       {user.role === "USER" && (
                         <button

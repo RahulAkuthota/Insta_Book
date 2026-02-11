@@ -9,7 +9,7 @@ const AdminRoute = ({ children }) => {
   if (!user || user.role !== "ADMIN") {
     return <Navigate to="/events" replace />;
   }
-
+  
   return children;
 };
 
