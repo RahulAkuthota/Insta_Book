@@ -1,6 +1,10 @@
-import nodemailer from "nodemailer";
+import * as SibApiV3Sdk from '@getbrevo/brevo';
 import { Booking } from "../models/booking.model.js";
 import { ApiError } from "./ApiError.js";
+
+// Initialize Brevo API
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
 const sendPaidTicketMail = async (bookingId) => {
   // 1️⃣ Fetch booking with relations
@@ -17,24 +21,37 @@ const sendPaidTicketMail = async (bookingId) => {
     throw new ApiError(400, "QR code not generated for booking");
   }
 
-  // 2️⃣ Convert Base64 QR → Buffer
-  const base64Data = booking.qrCodeUrl.replace(
-    /^data:image\/png;base64,/,
-    ""
-  );
-  const qrBuffer = Buffer.from(base64Data, "base64");
+// 🔍 DEBUG QR DATA
+console.log("🔎 Raw qrCodeUrl starts with:", booking.qrCodeUrl?.slice(0, 50));
 
-  // 3️⃣ Create transporter
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+let base64Content;
 
-  // 4️⃣ Email HTML (FIXED)
-  const htmlContent = `
+if (booking.qrCodeUrl.includes(",")) {
+  base64Content = booking.qrCodeUrl.split(",")[1];
+  console.log("✅ Detected data URL format. Extracted base64.");
+} else {
+  base64Content = booking.qrCodeUrl;
+  console.log("⚠️ No comma found. Assuming pure base64 string.");
+}
+
+console.log("📏 Base64 length:", base64Content?.length);
+console.log("🧪 Base64 first 30 chars:", base64Content?.slice(0, 30));
+console.log("🧪 Base64 last 30 chars:", base64Content?.slice(-30));
+
+
+  try {
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+
+    sendSmtpEmail.subject = "🎟️ Your Event Ticket - InstantBook";
+    sendSmtpEmail.to = [{ email: booking.userId.email, name: booking.userId.name }];
+    
+    sendSmtpEmail.sender = { 
+      name: "InstantBook", 
+      email: process.env.SENDER_EMAIL 
+    };
+
+    // 3️⃣ Email HTML (Updated for Brevo image referencing)
+    sendSmtpEmail.htmlContent = `
 <!DOCTYPE html>
 <html>
 <body style="margin:0; padding:0; background:#f2f2f2;">
@@ -124,18 +141,8 @@ CONFIRMED
 <td align="center" style="padding:20px;">
 <table cellpadding="0" cellspacing="0">
 <tr>
-<td align="center">
-<img
-src="cid:ticket-qr"
-width="180"
-style="display:block; border:1px solid #eee; padding:8px;"
-alt="QR Code"
-/>
-</td>
-</tr>
-<tr>
 <td align="center" style="font-size:12px; color:#666; padding-top:6px;">
-Show this QR code at the entry gate
+Show the attatched QR code at the entry gate
 </td>
 </tr>
 </table>
@@ -159,20 +166,19 @@ This is a system-generated ticket.
 </html>
 `;
 
-  // 5️⃣ Send mail
-  await transporter.sendMail({
-    from: `"InstaBook" <${process.env.EMAIL_USER}>`,
-    to: booking.userId.email,
-    subject: "🎟️ Your Event Ticket",
-    html: htmlContent,
-    attachments: [
-      {
-        filename: "ticket-qr.png",
-        content: qrBuffer,
-        cid: "ticket-qr",
-      },
-    ],
-  });
+    // 4️⃣ Attachments (Base64 string)
+    sendSmtpEmail.attachment = [{
+      name: "ticket-qr.png",
+      content: base64Content
+    }];
+
+    const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("✅ Paid Ticket Email sent via Brevo. ID:", data.body.messageId);
+
+  } catch (error) {
+    console.error("❌ Brevo Paid Ticket Error:", error.response?.body || error.message);
+    throw new ApiError(500, "Failed to send paid ticket email.");
+  }
 };
 
 export { sendPaidTicketMail };

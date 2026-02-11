@@ -12,7 +12,6 @@ const verifyJWT = asyncHandler(async (req, res , next) => {
       ? authHeader.split(" ")[1]
       : null);
 
-      console.log("AccessToken",token)
   if (!token) {
     throw new ApiError(401, "Unauthorized request");
   }

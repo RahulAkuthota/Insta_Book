@@ -19,6 +19,14 @@ const createEvent = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Organizer not found");
   }
 
+  const eventDate = new Date(date);
+
+  const invalidDate = eventDate < new Date();
+
+  if (invalidDate) {
+    throw new ApiError(400, "Event date must be in the future");
+  }
+
   const existingEvent = await Event.findOne({
     organizerId: organizer._id,
     title,
@@ -44,9 +52,9 @@ const createEvent = asyncHandler(async (req, res) => {
     isPublished: false,
   });
 
-  return res.status(201).json(
-    new ApiResponse(201, createdEvent, "Event created successfully")
-  );
+  return res
+    .status(201)
+    .json(new ApiResponse(201, createdEvent, "Event created successfully"));
 });
 
 /* ================= UPDATE EVENT ================= */
@@ -98,9 +106,9 @@ const updateEvent = asyncHandler(async (req, res) => {
 
   await event.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, event, "Event updated successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, event, "Event updated successfully"));
 });
 
 /* ================= DELETE EVENT ================= */
@@ -132,9 +140,9 @@ const deleteEvent = asyncHandler(async (req, res) => {
 
   await event.deleteOne();
 
-  return res.status(200).json(
-    new ApiResponse(200, null, "Event deleted successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Event deleted successfully"));
 });
 
 /* ================= GET EVENT BY ID ================= */
@@ -151,9 +159,9 @@ const getEventById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, event, "Event fetched successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, event, "Event fetched successfully"));
 });
 
 /* ================= LIST ORGANIZER EVENTS ================= */
@@ -163,9 +171,11 @@ const listOrganizerEvents = asyncHandler(async (req, res) => {
     organizerId: req.organizer._id,
   }).sort({ createdAt: -1 });
 
-  return res.status(200).json(
-    new ApiResponse(200, events, "Organized events fetched successfully")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, events, "Organized events fetched successfully"),
+    );
 });
 
 /* ================= GET EVENT TICKETS (ORGANIZER) ================= */
@@ -188,9 +198,9 @@ const getTickets = asyncHandler(async (req, res) => {
 
   const tickets = await Ticket.find({ eventId });
 
-  return res.status(200).json(
-    new ApiResponse(200, tickets, "Tickets fetched successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tickets, "Tickets fetched successfully"));
 });
 
 /* ================= PUBLISH EVENT ================= */
@@ -223,9 +233,9 @@ const publishEvent = asyncHandler(async (req, res) => {
   event.isPublished = true;
   await event.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, event, "Event published successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, event, "Event published successfully"));
 });
 
 /* ================= UNPUBLISH EVENT ================= */
@@ -253,9 +263,9 @@ const unPublishEvent = asyncHandler(async (req, res) => {
   event.isPublished = false;
   await event.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, event, "Event unpublished successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, event, "Event unpublished successfully"));
 });
 
 /* ================= PUBLIC APIs ================= */
@@ -263,9 +273,11 @@ const unPublishEvent = asyncHandler(async (req, res) => {
 const getPublishedEvents = asyncHandler(async (req, res) => {
   const events = await Event.find({ isPublished: true });
 
-  return res.status(200).json(
-    new ApiResponse(200, events, "Published events fetched successfully")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, events, "Published events fetched successfully"),
+    );
 });
 
 const getPublishedEventTickets = asyncHandler(async (req, res) => {
@@ -289,9 +301,9 @@ const getPublishedEventTickets = asyncHandler(async (req, res) => {
     availableSeats: { $gt: 0 },
   });
 
-  return res.status(200).json(
-    new ApiResponse(200, tickets, "Tickets fetched successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tickets, "Tickets fetched successfully"));
 });
 
 export {
