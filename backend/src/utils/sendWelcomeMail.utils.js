@@ -22,7 +22,7 @@ const sendWelcomeMail = async (recipients, user) => {
     sendSmtpEmail.subject = "Welcome to InstantBook 🚀";
     
     // Convert recipients array to Brevo format: [{ email: "..." }]
-    sendSmtpEmail.to = recipients.map(email => ({ email }));
+    sendSmtpEmail.to = [{ email: recipients }];
 
     // Use the dedicated project email you verified in Brevo
     sendSmtpEmail.sender = { 

@@ -23,7 +23,7 @@ const EventDetails = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [bookingLoading, setBookingLoading] = useState(false);
 
-  const [timeLeft, setTimeLeft] = useState(300); // 5 min
+  const [timeLeft, setTimeLeft] = useState(300);
   const timerRef = useRef(null);
 
   /* ---------------- FETCH ---------------- */
@@ -34,6 +34,7 @@ const EventDetails = () => {
           getEventById(eventId),
           getEventTickets(eventId),
         ]);
+
         setEvent(eventRes.data.data);
         setTickets(ticketRes.data.data || []);
       } catch {
@@ -42,8 +43,16 @@ const EventDetails = () => {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [eventId]);
+
+  /* ---------------- CLEANUP TIMER ---------------- */
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -68,12 +77,12 @@ const EventDetails = () => {
 
   const getTicketLabel = (type) => {
     if (type === "FREE") return "Free Pass";
-    if (type === "GENERAL") return "General Pass ";
+    if (type === "GENERAL") return "General Pass";
     if (type === "PLATINUM") return "Platinum Pass";
     return type;
   };
 
-  /* ---------------- TIMER (PAY ONLY) ---------------- */
+  /* ---------------- TIMER ---------------- */
   const startTimer = () => {
     stopTimer();
     setTimeLeft(300);
@@ -102,9 +111,11 @@ const EventDetails = () => {
   const handleFreeBooking = async () => {
     try {
       setBookingLoading(true);
+
       await bookFreeTicket(event._id, selectedTicket._id, {
         quantity: selectedQuantity,
       });
+
       toast.success("Ticket booked successfully 🎉");
       setShowModal(false);
       navigate("/mybookings");
@@ -129,7 +140,7 @@ const EventDetails = () => {
       const { bookingId, orderId, amount, razorpayKey } =
         res.data.data;
 
-      startTimer(); // ✅ START TIMER ONLY HERE
+      startTimer();
 
       const options = {
         key: razorpayKey,
@@ -139,17 +150,10 @@ const EventDetails = () => {
         description: event.title,
         order_id: orderId,
 
-        method: {
-          upi: true,
-          card: true,
-          netbanking: true,
-          wallet: true,
-        },
-
         handler: async (response) => {
           try {
             stopTimer();
-            const res = await verifyPayment({
+            const verifyRes = await verifyPayment({
               bookingId,
               ...response,
             });
@@ -157,7 +161,7 @@ const EventDetails = () => {
             navigate("/booking-success", {
               state: {
                 booking: {
-                  ...res.data.data,
+                  ...verifyRes.data.data,
                   eventTitle: event.title,
                 },
               },
@@ -175,9 +179,7 @@ const EventDetails = () => {
           },
         },
 
-        theme: {
-          color: "#4f46e5",
-        },
+        theme: { color: "#4f46e5" },
       };
 
       new window.Razorpay(options).open();
@@ -196,6 +198,7 @@ const EventDetails = () => {
     <>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-10">
         <div className="mx-auto max-w-5xl space-y-10 px-6">
+
           {/* EVENT */}
           <div className="rounded-3xl bg-white p-8 shadow-lg">
             <span className="inline-block rounded-full bg-indigo-100 px-4 py-1 text-xs font-semibold text-indigo-600">
@@ -218,7 +221,8 @@ const EventDetails = () => {
             </h2>
 
             {tickets.map((ticket) => {
-              const soldOut = (ticket.availableSeats === 0);
+              const availableSeats = Number(ticket.availableSeats || 0);
+              const soldOut = availableSeats <= 0;
 
               return (
                 <div
@@ -245,13 +249,15 @@ const EventDetails = () => {
                     <p className="mt-1 text-xs text-gray-500">
                       {soldOut
                         ? "Sold Out"
-                        : `${ticket.availableSeats} seats left`}
+                        : `${availableSeats} seats left`}
                     </p>
                   </div>
 
                   <button
                     disabled={soldOut}
                     onClick={() => {
+                      if (soldOut) return;
+
                       if (!user) {
                         toast.error("Please login to continue");
                         navigate("/login", {
@@ -259,13 +265,14 @@ const EventDetails = () => {
                         });
                         return;
                       }
+
                       setSelectedTicket(ticket);
                       setSelectedQuantity(1);
                       setShowModal(true);
                     }}
-                    className={`rounded-xl px-6 py-2 text-sm font-semibold ${
+                    className={`rounded-xl px-6 py-2 text-sm font-semibold transition ${
                       soldOut
-                        ? "bg-gray-300 text-gray-600"
+                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                         : "bg-indigo-600 text-white hover:bg-indigo-700"
                     }`}
                   >
@@ -291,40 +298,38 @@ const EventDetails = () => {
             </p>
 
             {/* QUANTITY */}
-            <div className="mt-4">
-              <div className="flex items-center justify-between gap-4">
-                <button
-                  onClick={() =>
-                    setSelectedQuantity((q) => Math.max(1, q - 1))
-                  }
-                  disabled={selectedQuantity === 1}
-                  className="h-12 w-12 rounded-full border text-xl font-bold"
-                >
-                  −
-                </button>
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <button
+                onClick={() =>
+                  setSelectedQuantity((q) => Math.max(1, q - 1))
+                }
+                disabled={selectedQuantity === 1}
+                className="h-12 w-12 rounded-full border text-xl font-bold"
+              >
+                −
+              </button>
 
-                <div className="text-lg font-semibold">
-                  {selectedQuantity}
-                </div>
-
-                <button
-                  onClick={() =>
-                    setSelectedQuantity((q) =>
-                      Math.min(
-                        Math.min(5, selectedTicket.availableSeats),
-                        q + 1
-                      )
-                    )
-                  }
-                  disabled={
-                    selectedQuantity ===
-                    Math.min(5, selectedTicket.availableSeats)
-                  }
-                  className="h-12 w-12 rounded-full border text-xl font-bold"
-                >
-                  +
-                </button>
+              <div className="text-lg font-semibold">
+                {selectedQuantity}
               </div>
+
+              <button
+                onClick={() =>
+                  setSelectedQuantity((q) =>
+                    Math.min(
+                      Math.min(5, Number(selectedTicket.availableSeats || 0)),
+                      q + 1
+                    )
+                  )
+                }
+                disabled={
+                  selectedQuantity >=
+                  Math.min(5, Number(selectedTicket.availableSeats || 0))
+                }
+                className="h-12 w-12 rounded-full border text-xl font-bold"
+              >
+                +
+              </button>
             </div>
 
             {!isFreeTicket && (
@@ -354,7 +359,6 @@ const EventDetails = () => {
                   stopTimer();
                   setTimeLeft(300);
                   setShowModal(false);
-
                 }}
                 className="px-4 py-2 text-sm text-gray-600"
               >

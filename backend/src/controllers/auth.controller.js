@@ -66,7 +66,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
     user.emailVerified = true;
     await user.save();
   }
-  await sendWelcomeMail(user.email, user.name);
+  sendWelcomeMail(user.email, user.name);
   return res.redirect(
   `${process.env.FRONTEND_URL}/email-verified`
 );
@@ -95,7 +95,7 @@ const verifyUrl =
 `${process.env.BACKEND_URL}/api/v1/user/verify-email?token=${token}`;
 
 
-  await sendVerifyEmail(user.email, verifyUrl);
+  sendVerifyEmail(user.email, verifyUrl);
 
   return res.json(
     new ApiResponse(200, null, "Verification link sent")
