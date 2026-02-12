@@ -130,7 +130,7 @@ const Navbar = () => {
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm text-white shadow-sm">
                 IB
               </span>
-              InstaBook
+              InstantBook
             </Link>
 
             {/* Desktop */}
