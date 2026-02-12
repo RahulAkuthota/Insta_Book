@@ -79,8 +79,7 @@ const sendVerifyEmail = async (recipient, verifyUrl) => {
   const detailedError = error.response?.body?.message || 
                         error.response?.text || 
                         error.message;
-                        
-  console.log("ACTUAL BREVO ERROR:", detailedError); 
+  // console.log("ACTUAL BREVO ERROR:", detailedError); 
   throw new ApiError(500, `Brevo Error: ${detailedError}`);
 }
 };
