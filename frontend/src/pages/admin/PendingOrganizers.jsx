@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 import {
   getPendingOrganizers,
   approveOrganizer,
@@ -9,7 +10,7 @@ import toast from "react-hot-toast";
 const PendingOrganizers = () => {
   const [organizers, setOrganizers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null); // organizerId
+  const [actionLoading, setActionLoading] = useState(null);
 
   const fetchOrganizers = async () => {
     try {
@@ -53,18 +54,20 @@ const PendingOrganizers = () => {
   };
 
   if (loading) {
-    return (
-      <div className="p-6 text-gray-500">
-        Loading pending organizers...
-      </div>
-    );
+    return <div className="p-6 text-gray-500">Loading pending organizers...</div>;
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">
-        Pending Organizer Requests
-      </h1>
+    <div className="mx-auto max-w-6xl space-y-6 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Pending Organizer Requests</h1>
+        <NavLink
+          to="/admin/events"
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Events Dashboard
+        </NavLink>
+      </div>
 
       {organizers.length === 0 ? (
         <p className="text-gray-500">No pending requests</p>
@@ -73,33 +76,25 @@ const PendingOrganizers = () => {
           {organizers.map((o) => (
             <div
               key={o._id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border bg-white p-5"
+              className="flex flex-col gap-4 rounded-xl border bg-white p-5 sm:flex-row sm:items-center sm:justify-between"
             >
-              {/* LEFT */}
               <div>
-                <p className="font-semibold text-gray-900">
-                  {o.organizationName}
-                </p>
+                <p className="font-semibold text-gray-900">{o.organizationName}</p>
                 <p className="text-sm text-gray-600">
                   {o.userId.name} · {o.userId.email}
                 </p>
-                <p className="text-sm text-gray-600">
-                  📞 {o.phone}
-                </p>
+                <p className="text-sm text-gray-600">📞 {o.phone}</p>
               </div>
 
-              {/* RIGHT */}
               <div className="flex gap-3">
                 <button
                   disabled={actionLoading === o._id}
                   onClick={() => handleApprove(o._id)}
-                  className={`rounded-lg px-4 py-2 text-sm font-semibold text-white
-                    ${
-                      actionLoading === o._id
-                        ? "bg-green-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }
-                  `}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold text-white ${
+                    actionLoading === o._id
+                      ? "bg-green-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
                 >
                   {actionLoading === o._id ? "Approving..." : "Approve"}
                 </button>
@@ -107,13 +102,11 @@ const PendingOrganizers = () => {
                 <button
                   disabled={actionLoading === o._id}
                   onClick={() => handleReject(o._id)}
-                  className={`rounded-lg px-4 py-2 text-sm font-semibold text-white
-                    ${
-                      actionLoading === o._id
-                        ? "bg-red-400 cursor-not-allowed"
-                        : "bg-red-600 hover:bg-red-700"
-                    }
-                  `}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold text-white ${
+                    actionLoading === o._id
+                      ? "bg-red-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
                 >
                   {actionLoading === o._id ? "Rejecting..." : "Reject"}
                 </button>

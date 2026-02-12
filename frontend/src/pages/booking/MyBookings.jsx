@@ -30,22 +30,31 @@ const MyBookings = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh] text-gray-500">
-        Loading your bookings...
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="rounded-2xl border border-slate-200 bg-white px-8 py-6 text-slate-500 shadow-sm">
+          Loading your bookings...
+        </div>
       </div>
     );
   }
 
   if (bookings.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh] text-gray-500">
-        You have no bookings yet
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-8 py-10 text-center">
+          <p className="text-lg font-semibold text-slate-800">
+            You have no bookings yet
+          </p>
+          <p className="mt-2 text-sm text-slate-500">
+            Explore events and reserve your first ticket.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
       <h1 className="text-3xl font-bold text-gray-900">
         My Bookings
       </h1>
@@ -53,12 +62,19 @@ const MyBookings = () => {
       <div className="space-y-4">
         {bookings.map((b) => {
           const expired = isTicketExpired(b.eventId);
+          const isUsed = b.checkInStatus === "USED";
+          const statusLabel = isUsed ? "USED" : expired ? "EXPIRED" : "ACTIVE";
+          const statusClass = isUsed
+            ? "bg-blue-100 text-blue-700"
+            : expired
+            ? "bg-red-100 text-red-700"
+            : "bg-green-100 text-green-700";
 
           return (
             <div
               key={b._id}
-              className={`rounded-2xl border bg-white p-6 shadow-sm flex flex-col sm:flex-row sm:justify-between gap-6
-                ${expired ? "opacity-60" : ""}
+              className={`flex flex-col gap-6 rounded-2xl border bg-white p-6 shadow-sm transition sm:flex-row sm:justify-between
+                ${expired && !isUsed ? "opacity-60" : ""}
               `}
             >
               {/* LEFT */}
@@ -90,26 +106,26 @@ const MyBookings = () => {
 
                 {/* STATUS */}
                 <span
-                  className={`inline-block rounded-full px-3 py-1 text-xs font-semibold
-                    ${
-                      expired
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
-                    }
-                  `}
+                  className={`inline-block rounded-full px-3 py-1 text-xs font-semibold tracking-wide ${statusClass}`}
                 >
-                  {expired ? "EXPIRED" : "ACTIVE"}
+                  {statusLabel}
                 </span>
               </div>
 
               {/* RIGHT */}
-              {!expired && (
+              {!expired && !isUsed && (
                 <div className="flex items-center justify-center">
-                  <img
-                    src={b.qrCodeUrl}
-                    alt="QR Code"
-                    className="h-28 w-28 rounded-lg border"
-                  />
+                  {b.qrCodeUrl ? (
+                    <img
+                      src={b.qrCodeUrl}
+                      alt="QR Code"
+                      className="h-28 w-28 rounded-lg border bg-white p-1"
+                    />
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-3 text-xs text-slate-500">
+                      QR unavailable
+                    </div>
+                  )}
                 </div>
               )}
             </div>

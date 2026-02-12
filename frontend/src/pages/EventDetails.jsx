@@ -56,16 +56,20 @@ const EventDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-gray-500">
-        Loading event details...
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="rounded-2xl border border-slate-200 bg-white px-8 py-6 text-slate-500 shadow-sm">
+          Loading event details...
+        </div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-red-500">
-        Event not found
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-8 py-6 text-red-600">
+          Event not found
+        </div>
       </div>
     );
   }
@@ -74,6 +78,9 @@ const EventDetails = () => {
   const isFreeTicket = selectedTicket?.price === 0;
   const totalAmount =
     (selectedTicket?.price || 0) * selectedQuantity;
+  const allSoldOut =
+    tickets.length > 0 &&
+    tickets.every((ticket) => Number(ticket.availableSeats || 0) <= 0);
 
   const getTicketLabel = (type) => {
     if (type === "FREE") return "Free Pass";
@@ -128,6 +135,8 @@ const EventDetails = () => {
 
   /* ---------------- PAID BOOKING ---------------- */
   const handlePaidBooking = async () => {
+    if (bookingLoading) return;
+
     try {
       setBookingLoading(true);
 
@@ -139,6 +148,12 @@ const EventDetails = () => {
 
       const { bookingId, orderId, amount, razorpayKey } =
         res.data.data;
+
+      if (!window.Razorpay) {
+        toast.error("Payment gateway failed to load. Please try again.");
+        setBookingLoading(false);
+        return;
+      }
 
       startTimer();
 
@@ -169,6 +184,8 @@ const EventDetails = () => {
           } catch {
             stopTimer();
             toast.error("Payment verification failed");
+          } finally {
+            setBookingLoading(false);
           }
         },
 
@@ -176,6 +193,7 @@ const EventDetails = () => {
           ondismiss: () => {
             stopTimer();
             toast.error("Payment cancelled");
+            setBookingLoading(false);
           },
         },
 
@@ -188,7 +206,6 @@ const EventDetails = () => {
       toast.error(
         err.response?.data?.message || "Unable to initiate payment"
       );
-    } finally {
       setBookingLoading(false);
     }
   };
@@ -196,12 +213,12 @@ const EventDetails = () => {
   /* ---------------- UI ---------------- */
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-10">
-        <div className="mx-auto max-w-5xl space-y-10 px-6">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-slate-50 to-indigo-100/60 py-8 sm:py-10">
+        <div className="mx-auto max-w-5xl space-y-8 px-4 sm:space-y-10 sm:px-6">
 
           {/* EVENT */}
-          <div className="rounded-3xl bg-white p-8 shadow-lg">
-            <span className="inline-block rounded-full bg-indigo-100 px-4 py-1 text-xs font-semibold text-indigo-600">
+          <div className="rounded-3xl border border-indigo-100 bg-white p-6 shadow-lg sm:p-8">
+            <span className="inline-block rounded-full bg-gradient-to-r from-cyan-100 to-indigo-100 px-4 py-1 text-xs font-semibold text-indigo-700">
               {event.category}
             </span>
 
@@ -220,6 +237,17 @@ const EventDetails = () => {
               Tickets
             </h2>
 
+            {tickets.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+                Tickets are not available for this event yet.
+              </div>
+            )}
+            {allSoldOut && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm font-semibold text-red-700">
+                All tickets are sold out for this event.
+              </div>
+            )}
+
             {tickets.map((ticket) => {
               const availableSeats = Number(ticket.availableSeats || 0);
               const soldOut = availableSeats <= 0;
@@ -227,7 +255,7 @@ const EventDetails = () => {
               return (
                 <div
                   key={ticket._id}
-                  className="flex flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-indigo-200 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="text-lg font-semibold">
@@ -287,7 +315,7 @@ const EventDetails = () => {
 
       {/* MODAL */}
       {showModal && selectedTicket && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
             <h3 className="text-xl font-bold">
               {isFreeTicket ? "Confirm Booking" : "Complete Payment"}
@@ -372,7 +400,7 @@ const EventDetails = () => {
                     ? handleFreeBooking
                     : handlePaidBooking
                 }
-                className="rounded-xl bg-indigo-600 px-6 py-2 text-sm font-semibold text-white"
+                className="rounded-xl bg-indigo-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
               >
                 {bookingLoading
                   ? "Processing..."

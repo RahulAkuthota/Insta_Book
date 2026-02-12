@@ -296,10 +296,8 @@ const getPublishedEventTickets = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Event not found or not published");
   }
 
-  const tickets = await Ticket.find({
-    eventId,
-    availableSeats: { $gt: 0 },
-  });
+  // Return all ticket types so frontend can explicitly show SOLD OUT state.
+  const tickets = await Ticket.find({ eventId });
 
   return res
     .status(200)

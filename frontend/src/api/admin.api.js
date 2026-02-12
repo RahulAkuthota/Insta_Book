@@ -8,3 +8,6 @@ export const approveOrganizer = (organizerId) =>
 
 export const rejectOrganizer = (organizerId) =>
   api.patch(`/admin/organizers/${organizerId}/reject`);
+
+export const getAdminEvents = (filter = "active") =>
+  api.get("/admin/events", { params: { filter } });

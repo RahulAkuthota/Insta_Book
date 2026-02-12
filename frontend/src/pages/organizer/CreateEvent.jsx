@@ -75,7 +75,7 @@ const CreateEvent = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-slate-50 to-indigo-100/60 px-4 py-10">
       <div className="mx-auto max-w-3xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -182,7 +182,7 @@ const CreateEvent = () => {
               className={`rounded-lg px-6 py-2 font-semibold text-white ${
                 loading || isFormInvalid
                   ? "bg-indigo-400"
-                  : "bg-gradient-to-r from-indigo-600 to-purple-600"
+                  : "bg-gradient-to-r from-indigo-600 to-cyan-600"
               }`}
             >
               {loading ? "Creating..." : "Create Event"}

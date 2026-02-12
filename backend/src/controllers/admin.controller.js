@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Organizer } from "../models/organizer.model.js";
 import { User } from "../models/user.model.js";
+import { Event } from "../models/event.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
@@ -110,8 +111,58 @@ const rejectOrganizer = asyncHandler(async (req, res) => {
   );
 });
 
+/* ================= ADMIN EVENTS LIST ================= */
+
+const getAdminEvents = asyncHandler(async (req, res) => {
+  const { filter = "active" } = req.query;
+  const normalizedFilter = String(filter).toLowerCase();
+
+  const events = await Event.find()
+    .populate({
+      path: "organizerId",
+      select: "organizationName phone userId organizerStatus",
+      populate: {
+        path: "userId",
+        select: "name email",
+      },
+    })
+    .sort({ date: 1, startTime: 1 });
+
+  const now = new Date();
+
+  const withMeta = events.map((eventDoc) => {
+    const event = eventDoc.toObject();
+    const datePart = event?.date
+      ? new Date(event.date).toISOString().split("T")[0]
+      : null;
+    const startTime = event?.startTime || "00:00";
+    const eventDateTime = datePart ? new Date(`${datePart}T${startTime}:00`) : null;
+    const isExpired = eventDateTime ? eventDateTime < now : false;
+    const isActive = event.isPublished && !isExpired;
+
+    return {
+      ...event,
+      isExpired,
+      isActive,
+    };
+  });
+
+  const filtered = withMeta.filter((event) => {
+    if (normalizedFilter === "active") return event.isActive;
+    if (normalizedFilter === "expired") return event.isExpired;
+    if (normalizedFilter === "published") return event.isPublished;
+    if (normalizedFilter === "unpublished") return !event.isPublished;
+    return true;
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, filtered, "Admin events fetched successfully"));
+});
+
 export {
   getPendingOrganizers,
   approveOrganizer,
   rejectOrganizer,
+  getAdminEvents,
 };

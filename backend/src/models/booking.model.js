@@ -59,6 +59,23 @@ const bookingSchema = new mongoose.Schema(
       // //   return this.bookingStatus === "CONFIRMED";
       // },
     },
+
+    checkInStatus: {
+      type: String,
+      enum: ["NOT_USED", "USED"],
+      default: "NOT_USED",
+    },
+
+    checkedInAt: {
+      type: Date,
+      default: null,
+    },
+
+    checkedInBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   { timestamps: true },
 );

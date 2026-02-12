@@ -28,3 +28,11 @@ export const verifyPayment = (data) => {
 export const getMyBookings = () =>
   api.get("/booking/mybookings");
 
+export const scanOrganizerBooking = (qrData) =>
+  api.post("/booking/organizer/scan", { qrData });
+
+export const markOrganizerBookingUsed = (bookingId) =>
+  api.patch(`/booking/organizer/${bookingId}/mark-used`);
+
+export const getOrganizerBookings = (params = {}) =>
+  api.get("/booking/organizer/bookings", { params });

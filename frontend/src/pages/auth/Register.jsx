@@ -73,24 +73,24 @@ const Register = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* NAME */}
-            <input
-              type="text"
-              placeholder="Name"
-              className="w-full rounded-md border px-3 py-2"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+              <input
+                type="text"
+                placeholder="Name"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
 
             {/* EMAIL */}
             <div>
               <input
-                type="email"
-                placeholder="Email"
-                className="w-full rounded-md border px-3 py-2"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                  type="email"
+                  placeholder="Email"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
               />
               {!isEmailValid && email && (
                 <p className="mt-1 text-xs text-red-600">
@@ -123,7 +123,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-gray-900 py-2.5 text-white disabled:opacity-60"
+              className="w-full rounded-md bg-gradient-to-r from-indigo-600 to-cyan-600 py-2.5 text-white shadow-sm transition hover:from-indigo-700 hover:to-cyan-700 disabled:opacity-60"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
@@ -139,12 +139,12 @@ const Register = () => {
       </div>
 
       {/* RIGHT */}
-      <div className="hidden md:flex items-center justify-center bg-gray-900 text-white">
+      <div className="hidden bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 text-white md:flex items-center justify-center">
         <div className="max-w-md px-8">
           <h2 className="text-3xl font-semibold mb-4">
             Welcome to InstaBook
           </h2>
-          <p className="text-gray-300 text-sm">
+          <p className="text-slate-200 text-sm leading-6">
             Discover events, book tickets, and enjoy seamless experiences.
           </p>
         </div>

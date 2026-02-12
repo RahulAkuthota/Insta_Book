@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { Link, Navigate, NavLink } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-hot-toast";
 import { applyOrganizer } from "../../api/organizer.api";
- import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const location = useLocation();
 
   const [open, setOpen] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
@@ -20,6 +20,7 @@ const Navbar = () => {
   const [loading, setLoading] = useState(false);
   const [submitResult, setSubmitResult] = useState(null);
   const [submitMessage, setSubmitMessage] = useState("");
+  const navbarRef = useRef(null);
 
   const resetApplyState = () => {
     setOrganizationName("");
@@ -32,20 +33,42 @@ const Navbar = () => {
   };
 
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
-const handleLogout = async () => {
-  await logout();
-  setOpen(false);
-  setUserMenu(false);
+  useEffect(() => {
+    setOpen(false);
+    setUserMenu(false);
+  }, [location.pathname]);
 
-  toast.error("Logged out successfully", {
-  duration: 2000, // ⏱️ 2 seconds (default is ~4000ms)
-});
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!navbarRef.current) return;
+      if (!navbarRef.current.contains(event.target)) {
+        setOpen(false);
+        setUserMenu(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
 
-  navigate("/events", { replace: true });
-};
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    setOpen(false);
+    setUserMenu(false);
+
+    toast.success("Logged out successfully", {
+      duration: 2000,
+    });
+
+    navigate("/events", { replace: true });
+  };
 
   // Validation
   const handleOrgChange = (e) => {
@@ -93,12 +116,21 @@ const handleLogout = async () => {
 
   return (
     <>
-      <header className="bg-white shadow-sm">
+      <header
+        ref={navbarRef}
+        className="sticky top-0 z-40 border-b border-cyan-100 bg-white/90 shadow-sm backdrop-blur"
+      >
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link to="/events" className="text-xl font-bold text-indigo-600">
-              InstantBook
+            <Link
+              to="/events"
+              className="inline-flex items-center gap-2 text-xl font-bold text-indigo-700"
+            >
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm text-white shadow-sm">
+                IB
+              </span>
+              InstaBook
             </Link>
 
             {/* Desktop */}
@@ -111,13 +143,20 @@ const handleLogout = async () => {
                 <div className="relative">
                   <button
                     onClick={() => setUserMenu(!userMenu)}
-                    className="text-sm font-medium"
+                    className="rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-indigo-50"
                   >
                     Hi, {user.name} ▾
                   </button>
 
                   {userMenu && (
                     <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-lg z-50">
+                      <NavLink
+                        to="/profile"
+                        onClick={() => setUserMenu(false)}
+                        className="block px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Profile
+                      </NavLink>
                       <NavLink
                         to="/mybookings"
                         onClick={() => setUserMenu(false)}
@@ -144,6 +183,14 @@ const handleLogout = async () => {
                           >
                             Create Event
                           </NavLink>
+
+                          <NavLink
+                            to="/organizer/scanner"
+                            onClick={() => setUserMenu(false)}
+                            className="block px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Scan Tickets
+                          </NavLink>
                         </>
                       )}
 
@@ -156,6 +203,13 @@ const handleLogout = async () => {
                             className="block px-4 py-2 text-sm hover:bg-gray-100"
                           >
                             Pending Requests
+                          </NavLink>
+                          <NavLink
+                            to="/admin/events"
+                            onClick={() => setUserMenu(false)}
+                            className="block px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Events Dashboard
                           </NavLink>
                           </>
                       )}
@@ -197,17 +251,33 @@ const handleLogout = async () => {
             </div>
 
             {/* Mobile button */}
-            <button
-              className="md:hidden text-xl"
-              onClick={() => setOpen(!open)}
-            >
-              ☰
-            </button>
+            <div className="md:hidden flex items-center gap-2">
+              {user?.name && (
+                <span className="max-w-[120px] truncate rounded-full bg-cyan-50 px-2 py-1 text-xs font-semibold text-cyan-700">
+                  Hi, {user.name}
+                </span>
+              )}
+              <button
+                className="rounded-lg border border-slate-200 px-3 py-1 text-xl text-slate-700 transition hover:bg-slate-100"
+                onClick={() => setOpen(!open)}
+                aria-label="Toggle navigation menu"
+              >
+                ☰
+              </button>
+            </div>
           </div>
 
           {/* Mobile Menu */}
           {open && (
-            <div className="md:hidden mt-4 rounded-xl bg-white shadow-md">
+            <div className="md:hidden mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md">
+              {user && (
+                <div className="border-b border-slate-200 bg-cyan-50/70 px-5 py-3">
+                  <p className="text-sm font-semibold text-slate-800">
+                    Hi, {user.name}
+                  </p>
+                  <p className="text-xs text-slate-500">{user.email}</p>
+                </div>
+              )}
               <NavLink
                 to="/events"
                 onClick={() => setOpen(false)}
@@ -218,6 +288,13 @@ const handleLogout = async () => {
 
               {user ? (
                 <>
+                  <NavLink
+                    to="/profile"
+                    onClick={() => setOpen(false)}
+                    className="block px-5 py-3 text-sm font-medium hover:bg-gray-50"
+                  >
+                    Profile
+                  </NavLink>
                   <NavLink
                     to="/mybookings"
                     onClick={() => setOpen(false)}
@@ -242,6 +319,33 @@ const handleLogout = async () => {
                         className="block px-5 py-3 text-sm font-medium hover:bg-gray-50"
                       >
                         Create Event
+                      </NavLink>
+
+                      <NavLink
+                        to="/organizer/scanner"
+                        onClick={() => setOpen(false)}
+                        className="block px-5 py-3 text-sm font-medium hover:bg-gray-50"
+                      >
+                        Scan Tickets
+                      </NavLink>
+                    </>
+                  )}
+
+                  {user.role === "ADMIN" && (
+                    <>
+                      <NavLink
+                        to="/admin/organizers"
+                        onClick={() => setOpen(false)}
+                        className="block px-5 py-3 text-sm font-medium hover:bg-gray-50"
+                      >
+                        Pending Requests
+                      </NavLink>
+                      <NavLink
+                        to="/admin/events"
+                        onClick={() => setOpen(false)}
+                        className="block px-5 py-3 text-sm font-medium hover:bg-gray-50"
+                      >
+                        Events Dashboard
                       </NavLink>
                     </>
                   )}
@@ -290,8 +394,17 @@ const handleLogout = async () => {
 
       {/* APPLY ORGANIZER MODAL */}
       {showApplyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => {
+            setShowApplyModal(false);
+            resetApplyState();
+          }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-semibold">Apply to Become Organizer</h3>
             <p className="mt-1 text-sm text-gray-600">
               Admin approval is required.
@@ -314,6 +427,10 @@ const handleLogout = async () => {
                 className="w-full rounded-lg border px-3 py-2"
               />
             </div>
+            {orgError && <p className="mt-2 text-sm text-red-600">{orgError}</p>}
+            {phoneError && (
+              <p className="mt-2 text-sm text-red-600">{phoneError}</p>
+            )}
 
             {submitResult && (
               <p

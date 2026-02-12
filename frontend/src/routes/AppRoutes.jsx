@@ -9,10 +9,12 @@ import EmailVerified from "../pages/auth/EmailVerified";
 
 import Events from "../pages/events/Events.jsx";
 import EventDetails from "../pages/EventDetails.jsx";
-import MyBookings from "../pages/booking/ MyBookings.jsx";
+import MyBookings from "../pages/booking/MyBookings.jsx";
 import BookingSuccess from "../pages/booking/BookingSuccess";
+import Profile from "../pages/profile/Profile.jsx";
 
 import PendingOrganizers from "../pages/admin/PendingOrganizers";
+import AdminEvents from "../pages/admin/AdminEvents";
 
 import OrganizerLayout from "../pages/organizer/OrganizerLayout";
 import CreateEvent from "../pages/organizer/CreateEvent";
@@ -21,6 +23,7 @@ import OrganizerDashboard from "../pages/organizer/Dashboard.jsx";
 import OrganizerAnalytics from "../pages/organizer/Dashboard.jsx";
 import EventAnalytics from "../pages/organizer/EventAnalytics.jsx";
 import ManageTickets from "../pages/organizer/ManageTickets.jsx";
+import ScanTickets from "../pages/organizer/ScanTickets.jsx";
 import ForgotPassword from "../pages/auth/ForgotPassword.jsx"
 import ResetPassword from "../pages/auth/ResetPassword.jsx"
 
@@ -59,6 +62,15 @@ const AppRoutes = () => {
       />
 
       <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
         path="/booking-success"
         element={
           <PrivateRoute>
@@ -77,6 +89,15 @@ const AppRoutes = () => {
         }
       />
 
+      <Route
+        path="/admin/events"
+        element={
+          <AdminRoute>
+            <AdminEvents />
+          </AdminRoute>
+        }
+      />
+
       {/* -------- ORGANIZER -------- */}
       <Route
         path="/organizer"
@@ -89,6 +110,7 @@ const AppRoutes = () => {
         <Route path="events" element={<OrganizerEvent />} />
         <Route path="dashboard" element={<OrganizerDashboard />} />
         <Route path="create-event" element={<CreateEvent />} />
+        <Route path="scanner" element={<ScanTickets />} />
         <Route path="analytics" element={<OrganizerAnalytics />} />
         <Route path="events/:eventId/analytics" element={<EventAnalytics />} />
         <Route path="events/:eventId/tickets" element={<ManageTickets />} />

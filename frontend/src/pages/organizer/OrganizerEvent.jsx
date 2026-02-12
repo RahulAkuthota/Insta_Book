@@ -83,12 +83,20 @@ const OrganizerEvent = () => {
           My Events
         </h1>
 
-        <NavLink
-          to="/organizer/create-event"
-          className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-        >
-          + Create Event
-        </NavLink>
+        <div className="flex items-center gap-2">
+          <NavLink
+            to="/organizer/scanner"
+            className="rounded-lg border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Scan Tickets
+          </NavLink>
+          <NavLink
+            to="/organizer/create-event"
+            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            + Create Event
+          </NavLink>
+        </div>
       </div>
 
       {events.length === 0 ? (
